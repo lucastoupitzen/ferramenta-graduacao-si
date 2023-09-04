@@ -342,33 +342,25 @@ def pref_planilha(request):
                 Restricao.objects.all().delete()
                 MtvRestricao.objects.all().delete()
 
-            for row in worksheet.iter_rows(min_row=2, max_col=38, values_only=True):
-                nome = row[1]
-                if not isinstance(nome, str) or nome == "":
+            for row in worksheet.iter_rows(min_row=2, max_col=39, values_only=True):
+
+                email = row[1]
+                if not isinstance(email, str) or email == "":
                     continue
 
-                #Precisa adaptar o forms para o email do professor ser o identificador dele no BD
-                matches = process.extractOne(nome, [prof.NomeProf for prof in profs])
-                pontuacao = matches[1]
                 prof_encontrado = False
-                nome_professor = False
-                if matches and pontuacao >= 90:
-                    nome_professor = matches[0]
-                    print(f"Nome sujo: {nome}")
-                    print(f"Nome do professor no banco: {nome_professor}")
-                    print(f"Pontuação de correspondência: {pontuacao}")
-                    print("---")
-                    prof_encontrado = True
-                else:
-                    print(f"Nome sujo: {nome}")
-                    print("Professor não encontrado no banco de dados")
-                    print("---")
+                email_professor = False
+
+                for prof in profs:
+                    if email == prof.Email:
+                        email_professor = email
+                        prof_encontrado = True
 
                 if not prof_encontrado:
                     continue
 
                 semestre_par = True if excel_type == "pref_hro_2" else False
-                prof_db = Professor.objects.get(NomeProf=nome_professor)
+                prof_db = Professor.objects.get(Email=email_professor)
 
                 if semestre_par:
                     prof_db.consideracao2 = row[9]
