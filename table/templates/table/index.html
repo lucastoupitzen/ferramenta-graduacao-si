@@ -27,14 +27,9 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
     {%load static %}
-    <script src="{% static 'table/js/main.js' %}" 
-            type="text/javascript" 
-            defer 
-            data-smt-pagina = "{{semestre}}" 
-            data-url-save = "{% url 'save_modify' %}"
-            data-disciplinas = "{{disc}}"
-            data-nomes = "{{nomes_ext}}"
-    ></script>
+    <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+    <script type="module" src="{% static 'table/js/main.js' %}"></script>
+    {{ semestre|json_script:"smt"}}
     {{ detalhes_profs|json_script:"dtl_profs" }}
     {{ cods_tbl_hr|json_script:"cods_auto_obrig" }}
     {{ cods_tbl_hr_ext|json_script:"cods_auto_ext"}}
@@ -42,8 +37,6 @@
     {{ auto_profs|json_script:"auto_profs"}}
     {{ rest_horarios|json_script:"rest"}}
 
-
-    
     <title>Cronograma</title>
     
     <style>
@@ -86,95 +79,93 @@
             </div>
             </div>
         </div>
-       
-
-        {% comment %} <button type="button" class="btn btn-primary d-none" data-target="#exampleModalLong">Rever as mensagens (erro/ alertas)</button> {% endcomment %}
-            <table class="table table-bordered font-weight-bold editable" id="tbl1">
-                <thead>
-                    <tr class="table-secondary">
-                        <th scope="col"></th>
-                        <th scope="col">Seg</th>
-                        <th scope="col">Prof</th>
-                        <th scope="col">Ter</th>
-                        <th scope="col">Prof</th>
-                        <th scope="col">Qua</th>
-                        <th scope="col">Prof</th>
-                        <th scope="col">Qui</th>
-                        <th scope="col">Prof</th>
-                        <th scope="col">Sex</th>
-                        <th scope="col">Prof</th>
-                        <th scope="col">Turma</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th scope="row" class="align-middle text-center" >Matutino 1 8:00-09:45h</th>
-                        {%for i in tProfs.0 %}
-                        {%if forloop.counter0 < 10%}
-                        <td class="align-middle text-center">{{i}}</td>
+        <div id="url-data" data-url="{% url 'save_modify' %}"></div>
+        <table class="table table-bordered font-weight-bold editable" id="tbl1">
+            <thead>
+                <tr class="table-secondary">
+                    <th scope="col"></th>
+                    <th scope="col">Seg</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Ter</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qua</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qui</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Sex</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Turma</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row" class="align-middle text-center" >Matutino 1 8:00-09:45h</th>
+                    {%for i in tProfs.0 %}
+                    {%if forloop.counter0 < 10%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endif%}
+                    {%endfor%}
+                    <td rowspan="2" class="align-middle text-center">{{tProfs.0.10}}</td>
+                    
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Matutino 2 10:15-12:00h</th>
+                    {%for i in tProfs.1%}
+                    {%if forloop.counter0 < 10%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endif%}
+                    {%endfor%}
+                    <td style="display:none;">{{tProfs.0.10}}</td>
+                </tr>
+                <th colspan="12" class="table-secondary p-4"></th>
+                <tr>
+                    <th scope="row" rowspan="2" class="align-middle text-center">Vespertino 1 14:00 - 15:45h</th>
+                    <td class="align-middle text-center">{{tProfs.2.0}}</td>
+                    <td class="align-middle text-center">{{tProfs.2.1}}</td>
+                    {%for vl in tProfs.2%}
+                        {% if forloop.counter0 > 1 %}
+                        <td rowspan="2" class="align-middle text-center">{{vl}}</td>    
                         {%endif%}
-                        {%endfor%}
-                        <td rowspan="2" class="align-middle text-center">{{tProfs.0.10}}</td>
-                        
-                    </tr>
-                    <tr>
-                        <th scope="row" class="align-middle text-center">Matutino 2 10:15-12:00h</th>
-                        {%for i in tProfs.1%}
-                        {%if forloop.counter0 < 10%}
-                        <td class="align-middle text-center">{{i}}</td>
-                        {%endif%}
-                        {%endfor%}
-                        <td style="display:none;">{{tProfs.0.10}}</td>
-                    </tr>
-                    <th colspan="12" class="table-secondary p-4"></th>
-                    <tr>
-                        <th scope="row" rowspan="2" class="align-middle text-center">Vespertino 1 14:00 - 15:45h</th>
-                        <td class="align-middle text-center">{{tProfs.2.0}}</td>
-                        <td class="align-middle text-center">{{tProfs.2.1}}</td>
-                        {%for vl in tProfs.2%}
-                            {% if forloop.counter0 > 1 %}
-                            <td rowspan="2" class="align-middle text-center">{{vl}}</td>    
-                            {%endif%}
-                        {%endfor%}
-                        <td style="display:none;">3</td>
-                    </tr>
-                    <tr>
-                        <td class="align-middle text-center">{{tProfs.3.0}}</td>
-                        <td class="align-middle text-center">{{tProfs.3.1}}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row" class="align-middle text-center">Vespertino 2 16:15-18:00h</th>
-                        {%for i in tProfs.4%}
-                        <td class="align-middle text-center">{{i}}</td>
-                        {%endfor%}
-                        <td style="display:none;">3</td>
-                    </tr>
+                    {%endfor%}
+                    <td style="display:none;">3</td>
+                </tr>
+                <tr>
+                    <td class="align-middle text-center">{{tProfs.3.0}}</td>
+                    <td class="align-middle text-center">{{tProfs.3.1}}</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Vespertino 2 16:15-18:00h</th>
+                    {%for i in tProfs.4%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td style="display:none;">3</td>
+                </tr>
 
-                    <th colspan="12" class="table-secondary p-4"></th>
-                    <tr>
-                        <th scope="row" rowspan="2" class="align-middle text-center">Noturno 1 19:00 - 20:45h</th>
-                        {%for i in tProfs.5%}
-                        <td class="align-middle text-center">{{i}}</td>
-                        {%endfor%}
-                    </tr>
-                    <tr>
-                        {%for i in tProfs.6%}
-                        <td class="align-middle text-center">{{i}}</td>
-                        {%endfor%}
-                    </tr>
-                    <tr>
-                        <th scope="row" rowspan="2" class="align-middle text-center">Noturno 2 21:00 - 22:45h</th>
-                        {%for i in tProfs.7%}
-                        <td class="align-middle text-center">{{i}}</td>
-                        {%endfor%}
-                    </tr>
-                    <tr>
-                        {%for i in tProfs.8%}
-                        <td class="align-middle text-center">{{i}}</td>
-                        {%endfor%}
-                    </tr>
-                </tbody>
-            </table>
+                <th colspan="12" class="table-secondary p-4"></th>
+                <tr>
+                    <th scope="row" rowspan="2" class="align-middle text-center">Noturno 1 19:00 - 20:45h</th>
+                    {%for i in tProfs.5%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                </tr>
+                <tr>
+                    {%for i in tProfs.6%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                </tr>
+                <tr>
+                    <th scope="row" rowspan="2" class="align-middle text-center">Noturno 2 21:00 - 22:45h</th>
+                    {%for i in tProfs.7%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                </tr>
+                <tr>
+                    {%for i in tProfs.8%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                </tr>
+            </tbody>
+        </table>
         
         <div class="container">
             <div class="row">

@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 import json
 from openpyxl.reader.excel import load_workbook
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 import unicodedata
 
 from .planilha_distribuicao import *
@@ -196,71 +196,86 @@ def redirect(request):
 
 
 def save_modify(request):
-    if request.method == "POST":
-        data = json.load(request)
-        tbl_user = data.get("turmas_cadastro")
-        smt = data.get("semestre")
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        if request.method == 'POST':
+            data = json.load(request)
+            print(data)
+            print("--------------------------------")
+            # todo = data.get('payload')
+            # Todo.objects.create(task=todo['task'], completed=todo['completed'])
+            return JsonResponse({'status': 'foi'})
+        
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')
 
-        print(tbl_user)
+    
+    # if request.method == "POST":
+        # data = json.load(request)
+        # tbl_user = data.get("turmas_cadastro")
+        # smt = data.get("semestre")
 
-        ano = datetime.now().year
-        dias = Dia.objects.all()
+        # print(tbl_user)
 
-        deletar_valores(dias, tbl_user, ano, smt)
+        # ano = datetime.now().year
+        # dias = Dia.objects.all()
 
-        tbl_user, tbl_user_invalidos, razao_extrapolo = limite_registro_profs(tbl_user)
+        # deletar_valores(dias, tbl_user, ano, smt)
 
-        conflitos = ""
-        for turma in tbl_user_invalidos:
-            tem_conflito = conflito_hro(turma, ano, smt)
-            if tem_conflito:
-                conflitos += f"{tem_conflito}"
+        # tbl_user, tbl_user_invalidos, razao_extrapolo = limite_registro_profs(tbl_user)
 
-        for turma in tbl_user:
-            turma_db = Turma.objects.filter(
-                Q(
-                    CoDisc=turma["cod_disc"],
-                    CodTurma=turma["cod_turma"],
-                    Ano=ano,
-                    CoDisc__SemestreIdeal=smt,
-                    Eextra="N",
-                )
-                | Q(
-                    CoDisc=turma["cod_disc"],
-                    CodTurma=turma["cod_turma"],
-                    Ano=ano,
-                    Eextra="S",
-                )
-            )
-            if not turma_db.exists():
-                cadastrar_turma(turma, ano, smt)
+        # conflitos = ""
+        # for turma in tbl_user_invalidos:
+        #     tem_conflito = conflito_hro(turma, ano, smt)
+        #     if tem_conflito:
+        #         conflitos += f"{tem_conflito}"
 
-            dia = Dia.objects.filter(Horario=turma["horario"], DiaSemana=turma["dia"])
+        # for turma in tbl_user:
+        #     turma_db = Turma.objects.filter(
+        #         Q(
+        #             CoDisc=turma["cod_disc"],
+        #             CodTurma=turma["cod_turma"],
+        #             Ano=ano,
+        #             CoDisc__SemestreIdeal=smt,
+        #             Eextra="N",
+        #         )
+        #         | Q(
+        #             CoDisc=turma["cod_disc"],
+        #             CodTurma=turma["cod_turma"],
+        #             Ano=ano,
+        #             Eextra="S",
+        #         )
+        #     )
+        #     if not turma_db.exists():
+        #         cadastrar_turma(turma, ano, smt)
 
-            if not dia.exists():
-                cadastrar_dia(turma, ano, smt)
-            else:
-                dia = Dia.objects.get(
-                    Horario=turma["horario"], DiaSemana=turma["dia"]
-                )  # melhorar isso
-                existe_dia_turma = False
-                t_relacionadas_dia = dia.Turmas.all()
+        #     dia = Dia.objects.filter(Horario=turma["horario"], DiaSemana=turma["dia"])
 
-                for t_dia in t_relacionadas_dia:
-                    existe_dia_turma = existe_turma_user(t_dia, turma, ano)
+        #     if not dia.exists():
+        #         cadastrar_dia(turma, ano, smt)
+        #     else:
+        #         dia = Dia.objects.get(
+        #             Horario=turma["horario"], DiaSemana=turma["dia"]
+        #         )  # melhorar isso
+        #         existe_dia_turma = False
+        #         t_relacionadas_dia = dia.Turmas.all()
 
-                if not existe_dia_turma:
-                    tem_conflito = atualizar_dia(turma, dia, ano, smt)
-                    if tem_conflito:
-                        conflitos += f"{tem_conflito}"
+        #         for t_dia in t_relacionadas_dia:
+        #             existe_dia_turma = existe_turma_user(t_dia, turma, ano)
 
-        response_data = {
-            "conflitos_prof_semestres": conflitos,
-            "prof_turma_extrapolando": razao_extrapolo,
-        }
-        return JsonResponse(response_data)
+        #         if not existe_dia_turma:
+        #             tem_conflito = atualizar_dia(turma, dia, ano, smt)
+        #             if tem_conflito:
+        #                 conflitos += f"{tem_conflito}"
 
-    return HttpResponse("fail")
+        # response_data = {
+        #     "conflitos_prof_semestres": conflitos,
+        #     "prof_turma_extrapolando": razao_extrapolo,
+        # }
+        # return JsonResponse(response_data)
+    #     return HttpResponse("sucesso")
+    # return HttpResponse("fail")
 
 
 #Nova implementaçao para salvar automaticamente as

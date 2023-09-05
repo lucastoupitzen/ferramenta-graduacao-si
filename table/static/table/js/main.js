@@ -1,7 +1,7 @@
+'use strict';
 //Carregando os dados enviados do views.py e que serão utilizados no javascript
-const data = document.currentScript.dataset;
-const semestre = parseInt(data.smtPagina);
-URL = data.urlSave;
+//Depois tentar fazer elas serem variáveis locais
+const semestre = parseInt(JSON.parse(document.getElementById("smt").textContent));
 const dtl_profs = JSON.parse(document.getElementById("dtl_profs").textContent);
 const auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
 const cods_auto_ext = JSON.parse(document.getElementById("cods_auto_ext").textContent);
@@ -9,9 +9,15 @@ const cods_auto_obrig = JSON.parse(document.getElementById("cods_auto_obrig").te
 const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 
-$(document).ready(function () {
 
-    //Controla o paste para só colar texto
+// importando os módulos
+import { save_edition } from "./modules/crud_turmas.js";
+// exportando para o crud_turmas
+export {cods_auto_ext, cods_auto_obrig, semestre}; 
+
+$(document).ready(function () {
+    
+    //Controla o paste para só colar texto nas células
     document.querySelector(".editable").addEventListener("paste", function(e) {
         e.preventDefault();
         const text = e.clipboardData.getData("text/plain");
@@ -35,27 +41,6 @@ $(document).ready(function () {
         });
     });
     
-
-    $(".editable td").on("dblclick", handleDoubleClick);
-
-    function handleDoubleClick(event) {
-        const cell = event.currentTarget; // A célula em que ocorreu o duplo clique
-        const target = event.target; // O elemento alvo do clique dentro da célula
-        let colIndex = cell.cellIndex;
-        const rowIndex = cell.parentNode.rowIndex;
-        const specialRows = [5, 9, 11];
-        if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
-        
-
-        
-        //coluna das turmas não deve ser editável
-        if(colIndex == 11) return
-        
-        // Verifica se o alvo do clique é o ícone
-        if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex);
-        
-    }
-
     //exibe a caixa de mensagens para alertas
     function openModal(messages) {
         const modalBody = document.getElementById("modalBody");
@@ -87,7 +72,7 @@ $(document).ready(function () {
         });
     });
 
-    // Manipular o clique no ícone de "X" para fechar os detalhes do professor
+    // Manipula o clique no ícone de "X" para fechar os detalhes do professor
     $('#fechar_info').click(function() {
         $('.red-transparent').removeClass('red-transparent');
         $('#prof').val("");
@@ -201,23 +186,42 @@ $(document).ready(function () {
         }   
     });
 
+    $(".editable td").on("dblclick", handleDoubleClick);
+    function handleDoubleClick(event) {
+        const cell = event.currentTarget; // A célula em que ocorreu o duplo clique
+        const target = event.target; // O elemento alvo do clique dentro da célula
+        let colIndex = cell.cellIndex;
+        const rowIndex = cell.parentNode.rowIndex;
+        const specialRows = [5, 9, 11];
+        if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
+                
+        //coluna das turmas não deve ser editável
+        if(colIndex == 11) return
+        
+        // Verifica se o alvo do clique é o ícone
+        if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex);
+        
+    }
+
    //Manipula o processo de edição das células
     const editable = {
         icon: null,
         rowIndex: 0,
         colIndex: 0,
         selected : null, // current selected cell
-        value : "", // current selected cell value
+        previousValue : "",
+
         // (B) "CONVERT" TO EDITABLE CELL
         edit: (cell, row, col) => {
-
-            $('#checkRestricaoHro').prop('checked', false);
-
+            
+            
+            editable.previousValue = $(cell).html().trim();
             editable.rowIndex = row;
             editable.colIndex = col;
+
+            $('#checkRestricaoHro').prop('checked', false);
             // Remove ícone presente na célula
-            let table = $('#tbl1');
-            table.find('i').remove();
+            $('#tbl1').find('i').remove();
             
             // Remove a classe 'red-transparent' das células marcadas
             if(transparent){
@@ -225,11 +229,10 @@ $(document).ready(function () {
                 markCells = !markCells;
                 transparent = false;
             }
-                        
-            
+
             // (B1) REMOVE "DOUBLE CLICK TO EDIT"
             cell.ondblclick = "";
-
+                        
             // (B2) EDITABLE CONTENT
             $(cell).attr("contenteditable", "true");
             $(cell).focus();
@@ -277,11 +280,11 @@ $(document).ready(function () {
             }
 
             // (C3) "MARK" CURRENT SELECTED CELL
-            cell.classList.add("edit");
             editable.selected = cell;
-            editable.value = cell.innerHTML;
-        
+            
             // (C4) PRESS ENTER/ESC OR CLICK OUTSIDE TO END EDIT
+            // A ideia do ESC é recuperar o valor de antes do usuário modificar
+            // ainda falta implementar
             window.addEventListener("click", editable.close);
             cell.onkeydown = evt => {
                 if (evt.key=="Enter" || evt.key=="Escape") {
@@ -295,14 +298,19 @@ $(document).ready(function () {
         // (C) END "EDIT MODE"
         close: evt => {
             if (evt.target !== editable.selected) {
-
-                const user = editable.selected.innerHTML;
-                const valueUser = user.replace(/&nbsp;/g, '');
+                const valueUser = $(editable.selected).html().trim();
                 const col = editable.colIndex;
                 const row = editable.rowIndex;
-                valueUser.trim();    
+                
+                // tira ícones que podem estar nas células posterior e anterior
+                $('#tbl1').find("i").remove();
 
-                if (col % 2 !== 0 && valueUser !== "") {
+                const nextCell = $(editable.selected).next();
+                const prevCell = $(editable.selected).prev();
+                const colCod = col % 2 !== 0;
+                let validInput = false;
+
+                if (colCod && valueUser !== "") {
                     let ExistMtr = false;
                     if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
 
@@ -311,7 +319,10 @@ $(document).ready(function () {
                     if (!ExistMtr) {
                         editable.selected.innerHTML = "";
                         openModal("Matéria de código inválido! Consulte os valores na tabela.");
+                    }else{
+                        validInput = true;
                     }
+
                 }else if(valueUser !== ""){
                     let ExistProf = false;
 
@@ -323,22 +334,37 @@ $(document).ready(function () {
                     
                     if(!ExistProf){
                         openModal("Nome do professor incorreto.");
+                        
                         editable.selected.innerHTML = "";
+                    }else{
+                        validInput = true;
                     }
+                    
                 }
         
-
                 // (C2) REMOVE "EDITABLE"
                 window.getSelection().removeAllRanges();
-                editable.selected.contentEditable = false;
+                $(editable.selected).attr("contenteditable", "false");
 
                 // (C3) RESTORE CLICK LISTENERS
                 window.removeEventListener("click", editable.close);
+                editable.selected.onkeydown = ""
+                editable.selected.ondblclick = () => editable.edit(editable.selected);
 
-                // (C4) "UNMARK" CURRENT SELECTED CELL
-                editable.selected.classList.remove("edit");
-                editable.selected = null;
+                // (C4) Se a célula ao lado estiver vazia ela fica editável
+                const parIncompletoDireita = validInput && colCod && $(nextCell).html().trim() === "";
+                const parImcompletoEsquerda = validInput && !colCod && $(prevCell).html().trim() === ""; 
+                //o indice 0 tem o elemento dom da célula
+                if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1);
+                if(parImcompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
 
+                
+                //(C5) Se o par de células estiver completo chama o save_edition
+                if(((colCod && !parIncompletoDireita  && valueUser !== "") 
+                || (!colCod && !parImcompletoEsquerda && valueUser !== ""))){
+                    save_edition.extrairDados(editable.selected, col, row, colCod);
+                }
+                
             }
         }
     };
