@@ -19,7 +19,7 @@ const save_edition = {
         // 33 é um número de turma arbitrário para linha 5
         // Assim como o 3 para as turmas do vespertinho
         const lastCellContent = row != 5 ? $(rowCells[rowCells.length - 1]).text() : 33;
-
+        
         //No models a linha da tabela corresponde a um horário
         if (row === 1 || row === 2) {
             row--; // 10:15 - 12:00h
@@ -27,7 +27,7 @@ const save_edition = {
             row = 2; //14:00 - 15:45h
         } else if (row === 6) {
             row = 4; //16:15-18:00h
-        } else if (row === 4 || row === 5) {
+        } else if (row === 8 || row === 9) {
             row = 5; //19:00 - 20:45h
         } else if (row === 10 || row === 11) {
             row = 7; //21:00 - 22:45h

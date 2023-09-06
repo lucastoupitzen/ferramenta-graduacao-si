@@ -32,6 +32,7 @@ def index(request, semestre="2"):
         dias_aulas = tur_materia.dia_set.all()
 
         for dia in dias_aulas:
+        
             col_tbl = int(dia.DiaSemana)
             row_tbl = int(dia.Horario)
 
@@ -67,6 +68,7 @@ def index(request, semestre="2"):
             tbl_vls[row][10] = 4
         else:
             tbl_vls[row][10] = 94
+
 
     rest_turno = {"manha": 0, "tarde": 22, "noite": 48}
     dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
