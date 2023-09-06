@@ -60,9 +60,15 @@
 </head>
 
 <body>
-    <p style="text-align: center;">Dê um duplo clique sobre a célula para alterá-la</p>
-    <p style="text-align: center;">As turmas extras podem ser preenchidas com qualquer matéria</p>
-    <div  style="width:90%; font-size: 12px;" class="mx-auto">
+    
+    <div style="width:90%; font-size: 12px;" class="mx-auto">
+        <ol>
+            <li>Dê um duplo clique sobre a célula para alterá-la</li>
+            <li>turmas extras podem ser preenchidas com qualquer matéria</li>
+            <li>o sistema salva quando o par disciplina/professor estiver completo</li>
+            <li>Ao apagar um docente o sistema deleta a disciplina associada a ele e vice-versa</li>
+            <li>Para fazer o update selecione uma célula já preenchida e troque o dado</li>
+        </ol>
         <!-- Modal -->
         <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -279,7 +285,7 @@
                             {%endif%} 
                         {% endfor %}
                         <a type="button" class="btn btn-secondary" href="{% url 'menupage' %}">Voltar Menu</a>
-                        <button type="button" onclick="tableToDict()" class="btn btn-secondary">Salvar Alterações</button>
+                        {% comment %} <button type="button" onclick="tableToDict()" class="btn btn-secondary">Salvar Alterações</button> {% endcomment %}
                     </div>
                 </div>
             </div>

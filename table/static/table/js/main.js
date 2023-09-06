@@ -366,23 +366,28 @@ $(document).ready(function () {
         
                 editable.removeEditable(editable.selected);
 
-                // (C4) Se a célula ao lado estiver vazia ela fica editável
-                const valueNextCell = $(nextCell).html().replace(/&nbsp;/g, '').trim();
-                const valuePrevCell = $(prevCell).html().replace(/&nbsp;/g, '').trim();
+                
+
+                //Exceção das duas células da segunda linha do vespertino 1
+                //A próxima coluna e a anterior podem ser indefinidas
+                const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+                const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
                 const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
                 const parImcompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
-                //o indice 0 tem o elemento dom da célula
+
+                // (C4) Se a célula ao lado estiver vazia ela fica editável
+                //o indice 0 tem o elemento DOM da célula
                 if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1);
                 if(parImcompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
-
 
                 //(C5) Se o par de células estiver completo chama o save_edition
                 let vl = {};
                 if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
                 || (!colCod && !parImcompletoEsquerda && valueUser !== ""))){
                     //"i/u" == insert/update
-                    //update
+
                     if(editable.previousValue !== ""){
+                        //update
                         if(colCod)
                             vl["ant_cod"] = editable.previousValue;
                         else

@@ -14,6 +14,7 @@ def update_cod(inf, year):
     turma_obj = cadastrar_turma(inf, year)
     atualizar_dia(turma_obj, inf, year)
 
+
 def deletar_valor(infos_user, year):
     # Iterar sobre as turmas do banco de dados e excluir aquelas que não estão em tbl_user
     try:
