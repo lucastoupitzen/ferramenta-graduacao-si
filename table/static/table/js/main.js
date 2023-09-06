@@ -214,11 +214,6 @@ $(document).ready(function () {
         // (B) "CONVERT" TO EDITABLE CELL
         edit: (cell, row, col) => {
             
-            
-            editable.previousValue = $(cell).html().trim();
-            editable.rowIndex = row;
-            editable.colIndex = col;
-
             $('#checkRestricaoHro').prop('checked', false);
             // Remove ícone presente na célula
             $('#tbl1').find('i').remove();
@@ -229,6 +224,10 @@ $(document).ready(function () {
                 markCells = !markCells;
                 transparent = false;
             }
+
+            editable.previousValue = $(cell).html().replace(/&nbsp;/g, '').trim();
+            editable.rowIndex = row;
+            editable.colIndex = col;
 
             // (B1) REMOVE "DOUBLE CLICK TO EDIT"
             cell.ondblclick = "";
@@ -295,10 +294,21 @@ $(document).ready(function () {
 
         },
 
+        removeEditable: (selected) =>{
+            // (C2) REMOVE "EDITABLE"
+            window.getSelection().removeAllRanges();
+            $(selected).attr("contenteditable", "false");
+
+            // (C3) RESTORE CLICK LISTENERS
+            window.removeEventListener("click", editable.close);
+            selected.onkeydown = "";
+            selected.ondblclick = () => editable.edit(selected);
+        },
+
         // (C) END "EDIT MODE"
         close: evt => {
             if (evt.target !== editable.selected) {
-                const valueUser = $(editable.selected).html().trim();
+                const valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
                 const col = editable.colIndex;
                 const row = editable.rowIndex;
                 
@@ -317,8 +327,15 @@ $(document).ready(function () {
                     if(row >= 4 && row <= 6 && cods_auto_ext.hasOwnProperty(valueUser))  ExistMtr = true; 
                     
                     if (!ExistMtr) {
-                        editable.selected.innerHTML = "";
                         openModal("Matéria de código inválido! Consulte os valores na tabela.");
+                        $('#myModal').on('hidden.bs.modal', function () {
+                            $(editable.selected).html("");
+                            editable.removeEditable(editable.selected);
+                            //Foca novamente na célula se a entrada for inválida
+                            editable.edit(editable.selected, row, col);
+                            return;
+                        });
+                        
                     }else{
                         validInput = true;
                     }
@@ -330,39 +347,68 @@ $(document).ready(function () {
                         return auto_profs[nome] === valueUser;
                     });
                       
-                    if (nomeEncontrado) { ExistProf = true }
+                    if (nomeEncontrado) ExistProf = true 
                     
                     if(!ExistProf){
                         openModal("Nome do professor incorreto.");
-                        
-                        editable.selected.innerHTML = "";
+                        $('#myModal').on('hidden.bs.modal', function () {
+                            $(editable.selected).html("");
+                            editable.removeEditable(editable.selected);
+                            //Foca novamente na célula se a entrada for inválida
+                            editable.edit(editable.selected, row, col);
+                            return;
+                        });
                     }else{
                         validInput = true;
                     }
                     
                 }
         
-                // (C2) REMOVE "EDITABLE"
-                window.getSelection().removeAllRanges();
-                $(editable.selected).attr("contenteditable", "false");
-
-                // (C3) RESTORE CLICK LISTENERS
-                window.removeEventListener("click", editable.close);
-                editable.selected.onkeydown = ""
-                editable.selected.ondblclick = () => editable.edit(editable.selected);
+                editable.removeEditable(editable.selected);
 
                 // (C4) Se a célula ao lado estiver vazia ela fica editável
-                const parIncompletoDireita = validInput && colCod && $(nextCell).html().trim() === "";
-                const parImcompletoEsquerda = validInput && !colCod && $(prevCell).html().trim() === ""; 
+                const valueNextCell = $(nextCell).html().replace(/&nbsp;/g, '').trim();
+                const valuePrevCell = $(prevCell).html().replace(/&nbsp;/g, '').trim();
+                const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
+                const parImcompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
                 //o indice 0 tem o elemento dom da célula
                 if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1);
                 if(parImcompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
 
-                
+
                 //(C5) Se o par de células estiver completo chama o save_edition
-                if(((colCod && !parIncompletoDireita  && valueUser !== "") 
+                let vl = {};
+                if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
                 || (!colCod && !parImcompletoEsquerda && valueUser !== ""))){
-                    save_edition.extrairDados(editable.selected, col, row, colCod);
+                    //"i/u" == insert/update
+                    //update
+                    if(editable.previousValue !== ""){
+                        if(colCod)
+                            vl["ant_cod"] = editable.previousValue;
+                        else
+                            vl["ant_prof"] = editable.previousValue;
+
+                        save_edition.extrairDados(editable.selected, col, row, colCod, "u", vl);
+                    }else{
+                        //insert
+                        save_edition.extrairDados(editable.selected, col, row, colCod, "i", vl);
+                    }
+                }
+
+                //(C6) caso de deleção
+                //====> arrumar o bug de quando vai deletar mas aperta enter antes de apagar td
+                if(editable.previousValue !== "" && valueUser === ""){
+                    if(colCod){
+                        vl["pf"] = valueNextCell;
+                        vl["cod"] = editable.previousValue;
+                        nextCell.html("");
+                    }else{
+                        vl["pf"] = editable.previousValue;
+                        vl["cod"] = valuePrevCell;
+                        prevCell.html("");
+                    }
+                    //"d" == delete
+                    save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
                 }
                 
             }

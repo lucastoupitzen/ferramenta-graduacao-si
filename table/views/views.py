@@ -199,10 +199,25 @@ def save_modify(request):
     if is_ajax:
         if request.method == 'POST':
             data = json.load(request)
-            print(data)
-            print("--------------------------------")
-            # todo = data.get('payload')
-            # Todo.objects.create(task=todo['task'], completed=todo['completed'])
+            info_par = data["info"]
+            ano = datetime.now().year
+
+            if info_par["tipo"] == "d":
+                deletar_valor(info_par, ano) #pegue a mensagem de erro
+            
+            elif info_par["tipo"] == "i":
+                #tratar caso de uma mesma turma ter 2 profs diferentes(RESTRIÇÃO)
+                # Aparece aq e no update tbm    
+                turma_obj = cadastrar_turma(info_par, ano)
+                atualizar_dia(turma_obj, info_par, ano)
+            
+            elif info_par["tipo"] == "u":
+                if "ant_prof" in info_par:
+                    update_prof(info_par, ano)
+                elif "ant_cod" in info_par:
+                    update_cod(info_par, ano)
+    
+
             return JsonResponse({'status': 'foi'})
         
         return JsonResponse({'status': 'Invalid request'}, status=400)
@@ -210,88 +225,6 @@ def save_modify(request):
         return HttpResponseBadRequest('Invalid request')
 
     
-    # if request.method == "POST":
-        # data = json.load(request)
-        # tbl_user = data.get("turmas_cadastro")
-        # smt = data.get("semestre")
-
-        # print(tbl_user)
-
-        # ano = datetime.now().year
-        # dias = Dia.objects.all()
-
-        # deletar_valores(dias, tbl_user, ano, smt)
-
-        # tbl_user, tbl_user_invalidos, razao_extrapolo = limite_registro_profs(tbl_user)
-
-        # conflitos = ""
-        # for turma in tbl_user_invalidos:
-        #     tem_conflito = conflito_hro(turma, ano, smt)
-        #     if tem_conflito:
-        #         conflitos += f"{tem_conflito}"
-
-        # for turma in tbl_user:
-        #     turma_db = Turma.objects.filter(
-        #         Q(
-        #             CoDisc=turma["cod_disc"],
-        #             CodTurma=turma["cod_turma"],
-        #             Ano=ano,
-        #             CoDisc__SemestreIdeal=smt,
-        #             Eextra="N",
-        #         )
-        #         | Q(
-        #             CoDisc=turma["cod_disc"],
-        #             CodTurma=turma["cod_turma"],
-        #             Ano=ano,
-        #             Eextra="S",
-        #         )
-        #     )
-        #     if not turma_db.exists():
-        #         cadastrar_turma(turma, ano, smt)
-
-        #     dia = Dia.objects.filter(Horario=turma["horario"], DiaSemana=turma["dia"])
-
-        #     if not dia.exists():
-        #         cadastrar_dia(turma, ano, smt)
-        #     else:
-        #         dia = Dia.objects.get(
-        #             Horario=turma["horario"], DiaSemana=turma["dia"]
-        #         )  # melhorar isso
-        #         existe_dia_turma = False
-        #         t_relacionadas_dia = dia.Turmas.all()
-
-        #         for t_dia in t_relacionadas_dia:
-        #             existe_dia_turma = existe_turma_user(t_dia, turma, ano)
-
-        #         if not existe_dia_turma:
-        #             tem_conflito = atualizar_dia(turma, dia, ano, smt)
-        #             if tem_conflito:
-        #                 conflitos += f"{tem_conflito}"
-
-        # response_data = {
-        #     "conflitos_prof_semestres": conflitos,
-        #     "prof_turma_extrapolando": razao_extrapolo,
-        # }
-        # return JsonResponse(response_data)
-    #     return HttpResponse("sucesso")
-    # return HttpResponse("fail")
-
-
-#Nova implementaçao para salvar automaticamente as
-#alterações no quando cada par de célula é editada.
-##
-
-
-def atualizar_dia(turma, dia, ano, smt):
-    turma_bd = Turma.objects.get(
-        CoDisc=turma["cod_disc"], CodTurma=turma["cod_turma"], Ano=ano
-    )
-    conflito = conflito_hro(turma, ano, smt)
-    if conflito:
-        return conflito
-    else:
-        dia.Turmas.add(turma_bd)
-
 
 def download_excel_data(request):
     # content-type of response

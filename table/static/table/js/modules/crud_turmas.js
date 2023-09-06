@@ -3,13 +3,13 @@ import { cods_auto_ext, cods_auto_obrig, semestre} from "../main.js";
 
 const save_edition = {
     
-    extrairDados: (cell, col, row, isCod) => {
+    extrairDados: (cell, col, row, isCod, type, vl) => {
         //Analisa sempre da célula do código do par
         if(!isCod) cell = $(cell).prev();
         
         const cods_auto =  $.extend(cods_auto_ext, cods_auto_obrig);
-        const vUsercod  = $(cell).html().trim();
-        const vUserProf = $(cell).next().html().trim();
+        const vUsercod  = type === "d" ? vl["cod"] : $(cell).html().trim();
+        const vUserProf =  type === "d" ? vl["pf"]: $(cell).next().html().trim();
         const cod_db =  cods_auto.hasOwnProperty(vUsercod) ? cods_auto[vUsercod] : "";
         
         // Obtém todas as células da linha
@@ -32,15 +32,17 @@ const save_edition = {
         } else if (row === 10 || row === 11) {
             row = 7; //21:00 - 22:45h
         }
-
-        const infosParCell = {
+        col = isCod ? col - 1 : col - 2;
+        let infosParCell = {
             "cod_disc" : cod_db,
             "professor" : vUserProf,
             "horario": row,
-            "dia": col - 1,
-            "cod_turma": lastCellContent
+            "dia": col,
+            "cod_turma": lastCellContent,
+            "tipo": type
         }
-        //console.log(infosParCell);
+        
+        if(type == "u") infosParCell = $.extend(infosParCell, vl);
         save_edition.requisicao(infosParCell);
     },
     requisicao: (content) => {
