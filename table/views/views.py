@@ -1,5 +1,4 @@
 import os
-from fuzzywuzzy import process
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 import json
