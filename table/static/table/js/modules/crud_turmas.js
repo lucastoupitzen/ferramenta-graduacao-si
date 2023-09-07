@@ -42,7 +42,7 @@ const save_edition = {
             "tipo": type
         }
         
-        if(type == "u") infosParCell = $.extend(infosParCell, vl);
+        if(type === "u") infosParCell = $.extend(infosParCell, vl);
         save_edition.requisicao(infosParCell);
     },
     requisicao: (content) => {

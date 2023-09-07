@@ -73,7 +73,7 @@ def index(request, semestre="2"):
     rest_turno = {"manha": 0, "tarde": 22, "noite": 48}
     dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
     profs_objs = Professor.objects.all()
-    dict_info = {}
+    restricoes_profs = {}
 
     #Decide quais restrição serão carregadas
     #Tem um erro de modelagem que precisa ser consertado,
@@ -92,7 +92,7 @@ def index(request, semestre="2"):
         # tentar melhorar desempenho da linha abaixo
         restricoes = prof_obj.restricao_set.filter(semestre=s_rest)
 
-        dict_info[str(prof_obj.Apelido)] = []
+        restricoes_profs[str(prof_obj.Apelido)] = []
         for rest_prof in restricoes:
             list_rest_indice = []
             indice = dia_sem[rest_prof.dia] + rest_turno[rest_prof.periodo]
@@ -114,12 +114,12 @@ def index(request, semestre="2"):
             else:
                 list_rest_indice = [indice, indice + 1, indice + 11, indice + 12]
 
-            if str(prof_obj.Apelido) in dict_info:
-                dict_info[str(prof_obj.Apelido)] += list_rest_indice
+            if str(prof_obj.Apelido) in restricoes_profs:
+                restricoes_profs[str(prof_obj.Apelido)] += list_rest_indice
             else:
-                dict_info[str(prof_obj.Apelido)] = list_rest_indice
+                restricoes_profs[str(prof_obj.Apelido)] = list_rest_indice
 
-    print(dict_info)
+    
 
     discs = Disciplina.objects.all()
     cods_tbl_hr = {}
@@ -204,23 +204,25 @@ def save_modify(request):
             info_par = data["info"]
             ano = datetime.now().year
 
+            erros = {}
             if info_par["tipo"] == "d":
-                deletar_valor(info_par, ano) #pegue a mensagem de erro
+                erros["delecao"] = deletar_valor(info_par, ano)
             
             elif info_par["tipo"] == "i":
                 #tratar caso de uma mesma turma ter 2 profs diferentes(RESTRIÇÃO)
-                # Aparece aq e no update tbm    
+                  
                 turma_obj = cadastrar_turma(info_par, ano)
-                atualizar_dia(turma_obj, info_par, ano)
+                erros["credito"] = atualizar_dia(turma_obj, info_par, ano)
             
             elif info_par["tipo"] == "u":
                 if "ant_prof" in info_par:
                     update_prof(info_par, ano)
+
                 elif "ant_cod" in info_par:
-                    update_cod(info_par, ano)
+                    erros["credito"] = update_cod(info_par, ano)
     
 
-            return JsonResponse({'status': 'foi'})
+            return JsonResponse({'status': erros })
         
         return JsonResponse({'status': 'Invalid request'}, status=400)
     else:

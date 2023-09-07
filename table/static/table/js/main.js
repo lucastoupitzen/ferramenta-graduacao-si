@@ -366,8 +366,6 @@ $(document).ready(function () {
         
                 editable.removeEditable(editable.selected);
 
-                
-
                 //Exceção das duas células da segunda linha do vespertino 1
                 //A próxima coluna e a anterior podem ser indefinidas
                 const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
