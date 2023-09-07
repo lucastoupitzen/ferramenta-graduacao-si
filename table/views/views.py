@@ -169,7 +169,7 @@ def index(request, semestre="2"):
                 tbl_pref[row][j].append(pref.NumProf.Apelido)
 
     context = {
-        "rest_horarios": dict_info,
+        "rest_horarios": restricoes_profs,
         "tbl_pref": tbl_pref,
         "semestre": semestre,
         "tProfs": tbl_vls,
