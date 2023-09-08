@@ -189,7 +189,7 @@ def menu(request):
 
 def redirect(request):
     if request.method == "POST":
-        valor_semestre = request.POST["select2"]
+        valor_semestre = request.POST["select1"]
         diretorio = str("/table/" + valor_semestre + "/")
         return HttpResponseRedirect(diretorio)
     else:

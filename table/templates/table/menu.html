@@ -1,35 +1,33 @@
 <!DOCTYPE html>
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
     <title>Menu</title>
 </head>
 <body>
     <div style="width:50%;" class="mx-auto">
         <h4>Menu para seleção da tabela correspondente ao semestre</h4>
-        <form id="semestreAno">
-            <div class="form-group">
-                <label for="select1">Qual o semestre?</label>
-                <select required="required" class="form-control" id="select1">
-                    <option value="par">Par</option>
-                    <option value="impar">Impar</option>
-                </select>
-            </div>
-            <button type="button" onclick="selectCourse()" class="btn btn-primary">Selecionar</button>
-        </form>
-
-        <form id="semestreCurso" method="post" action = "redirect" style="display:none">
+        <form id="semestreCurso" method="post" action = "redirect" >
             {% csrf_token %}
             <div class="form-group">
-                <label for="select2">Qual o semestre do Curso?</label>
-                <select required="required" class="form-control"  name="select2" id="select2">
+                <label for="select1">Selecione o semestre do curso...</label>
+                <select required="required" class="form-control" name="select1" id="select1">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
                 </select>
             </div>
-            <input type="submit" class="btn btn-primary">
-            <button type="button" onclick="voltar()" class="btn btn-primary">Voltar</button>
+            <input type="submit" class="btn btn-primary" value="Submeter">
         </form>
         <hr>
         <hr>
@@ -67,35 +65,6 @@
         </form>
 
     </div>
-   <script>
 
-        function selectCourse(){
-            e = document.getElementById("select1").value;
-            document.getElementById("semestreAno").style.display="none";
-            document.getElementById("semestreCurso").style.display="block";
-            valueSemestre = document.getElementById("select2")
-            if(e == "impar")
-                for(var i = 1; i<=7; i+=2){
-                    var opt = document.createElement("option");
-                    opt.value = i;
-                    opt.innerHTML = i;
-                    valueSemestre.appendChild(opt);
-                }
-            else if(e == "par")
-                for(var i = 2; i<=8; i+=2){
-                    var opt = document.createElement("option");
-                    opt.value = i;
-                    opt.innerHTML = i;
-                    valueSemestre.appendChild(opt);
-                }
-
-        }
-        
-        function voltar(){
-            document.getElementById("select2").innerHTML = "";
-            document.getElementById("semestreAno").style.display="block";
-            document.getElementById("semestreCurso").style.display="none";
-        }
-    </script>
 </body>
 </html>  
