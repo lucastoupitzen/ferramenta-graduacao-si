@@ -51,16 +51,8 @@
         <hr>
         <hr>
         <h4>Fazer download das planilhas com as informações do sistema</h4>
-        <form method="POST" action="{% url 'download_excel_data'%}">
+        <form method="POST" action="{% url 'download_zip_planilhas'%}">
             {% csrf_token %}
-            <select name="type" class="form-control">
-                <option value="dist_si" selected>Distribuição SI</option>
-                <option value="docente">Docentes</option>
-            </select>
-            <select name="semestre" class="mt-3 form-control">
-                <option value="impar" selected>Impar</option>
-                <option value="par">Par</option>
-            </select>
             <button type="submit" class="mt-3 btn btn-success">Baixar</button>
         </form>
 
