@@ -1,4 +1,5 @@
 import os
+import zipfile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 import json
@@ -189,7 +190,7 @@ def menu(request):
 
 def redirect(request):
     if request.method == "POST":
-        valor_semestre = request.POST["select2"]
+        valor_semestre = request.POST["select1"]
         diretorio = str("/table/" + valor_semestre + "/")
         return HttpResponseRedirect(diretorio)
     else:
@@ -227,40 +228,60 @@ def save_modify(request):
         return JsonResponse({'status': 'Invalid request'}, status=400)
     else:
         return HttpResponseBadRequest('Invalid request')
-
     
 
-def download_excel_data(request):
+def download_zip_planilhas(request):
     # content-type of response
     if request.method == "POST":
-        select_worksheet = request.POST.get("type")
-        semestre_tbl = request.POST.get("semestre")
-        response = HttpResponse(content_type="application/ms-excel")
-        # decide file name
-        response["Content-Disposition"] = 'attachment; filename="PlanilhaSI.xlsx"'
 
-        if select_worksheet == "docente":
-            cwd = os.getcwd()
-            file_path = os.path.join(cwd, "table/static/table/docentes.xlsx")
-            source_workbook = load_workbook(filename=file_path)
-            sheet_doc = source_workbook["docentes"]
-            planilha_docentes(sheet_doc)
-            source_workbook.save(response)
-            source_workbook.close()
+        #cria o arquivo zip
+        z = zipfile.ZipFile('Planilhas_graduação_SI.zip', 'w', zipfile.ZIP_DEFLATED)
 
-        else:
-            wb = openpyxl.Workbook()
-            sheet_si = wb.active
-            sheet_si.title = "SI"
-            planilha_si(sheet_si, semestre_tbl)
-            sheet_extra = wb.create_sheet("Extra")
-            planilha_extra(sheet_extra)
-            wb.save(response)
-            wb.close()
+        #planilha de docentes
+        cwd = os.getcwd()
+        file_path = os.path.join(cwd, "table/static/table/docentes.xlsx")
+        source_workbook = load_workbook(filename=file_path)
+        sheet_doc = source_workbook["docentes"]
+        planilha_docentes(sheet_doc)
+        source_workbook.save("Docentes.xlsx")
+        source_workbook.close()
+        z.write("Docentes.xlsx")
+        
+        #planilha de distribuição semestres pares
+        planilha_distribuição_semestre("par")
+        z.write("Distribuição_par.xlsx")
+
+        #planilha de distribuição semestres impares
+        planilha_distribuição_semestre("impar")
+        z.write("Distribuição_impar.xlsx")
+
+        z.close()
+
+        zip_arc = open("Planilhas_graduação_SI.zip", "rb")
+        response = HttpResponse(zip_arc, content_type='application/x-gzip')
+        response["Content-Disposition"] = 'attachment; filename="Planilhas_graduação_SI.zip"'
+
+        #limpa os arquivos criados no processo
+        os.remove("Docentes.xlsx")
+        os.remove("Distribuição_impar.xlsx")
+        os.remove("Distribuição_par.xlsx")
+        os.remove("Planilhas_graduação_SI.zip")
 
         return response
     else:
         return "erro"
+
+
+def planilha_distribuição_semestre(semestre):
+    wb = openpyxl.Workbook()
+    sheet_si = wb.active
+    sheet_si.title = "SI"
+    planilha_si(sheet_si, semestre)
+    sheet_extra = wb.create_sheet("Extra")
+    planilha_extra(sheet_extra)
+    wb.save(f"Distribuição_{semestre}.xlsx")
+    wb.close()
+
 
 
 def pref_planilha(request):

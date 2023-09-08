@@ -6,9 +6,9 @@ urlpatterns = [
     path("table", views.index, name="table"),
     path("save_modify", views.save_modify, name="save_modify"),
     path(
-        "download_excel_data",
-        views.download_excel_data,
-        name="download_excel_data",
+        "download_zip_planilhas",
+        views.download_zip_planilhas,
+        name="download_zip_planilhas",
     ),
     path("", views.menu, name="menupage"),
     path("redirect", views.redirect, name="redirect"),
