@@ -24,6 +24,12 @@ function openModal(title, messages) {
     myModal.show();
 }
 
+//Lida com os ícones de restrição
+// Variáveis de controle para o ícone
+let markCells = false;
+let transparent = false;
+ 
+
 $(document).ready(function () {
     
     //Controla o paste para só colar texto nas células
@@ -81,11 +87,7 @@ $(document).ready(function () {
     });
 
 
-    //Lida com os ícones de restrição
-    // Variáveis de controle para o ícone
-    let markCells = false;
-    let transparent = false;
- 
+
     $('#checkRestricaoHro').change(function() {
         if ($(this).is(':checked')) {
             let cells = $('#tbl1 td');
@@ -198,7 +200,7 @@ $(document).ready(function () {
                 
         //coluna das turmas não deve ser editável
         if(colIndex == 11) return
-        
+        console.log(colIndex)
         // Verifica se o alvo do clique é o ícone
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex);
         

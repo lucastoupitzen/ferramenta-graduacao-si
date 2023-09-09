@@ -239,7 +239,7 @@ def save_modify(request):
     
     
     
-def download_excel_data(request):
+def download_zip_planilhas(request):
     # content-type of response
     if request.method == "POST":
 

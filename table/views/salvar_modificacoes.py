@@ -92,6 +92,7 @@ def aula_manha_noite(data, alertas):
     if inf["horario"] not in [0,1,5,7]: return False
     
     horario = (0,1) if inf["horario"] in [5,7] else (5,7)
+    
     manha_noite = Dia.objects.filter(DiaSemana=inf["dia"], Horario__in=horario,\
                              Turmas__NroUSP__Apelido=inf["professor"], \
                               Turmas__CoDisc__SemestreIdeal=data["semestre"])
@@ -119,6 +120,7 @@ def aula_noite_outro_dia_manha(data, alertas):
 
     ind_lado_dia = int(inf["dia"]) + 2 if inf["horario"] == 7 else int(inf["dia"]) - 2
     hr = 0 if inf["horario"] == 7 else 7
+    
     noite_outro_dia_manha = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,\
                              Turmas__NroUSP__Apelido=inf["professor"], \
                               Turmas__CoDisc__SemestreIdeal=data["semestre"])

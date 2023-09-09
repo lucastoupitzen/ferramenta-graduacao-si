@@ -5,8 +5,13 @@ const save_edition = {
     
     extrairDados: (cell, col, row, isCod, type, vl) => {
         //Analisa sempre da célula do código do par
-        if(!isCod) cell = $(cell).prev();
+        const dia = isCod ? col - 1 : col - 2;
+        if(!isCod) {
+            cell = $(cell).prev();
+            col--;
+        }
         
+
         const cods_auto =  $.extend(cods_auto_ext, cods_auto_obrig);
         const vUsercod  = type === "d" ? vl["cod"] : $(cell).html().trim();
         const vUserProf =  type === "d" ? vl["pf"]: $(cell).next().html().trim();
@@ -32,7 +37,7 @@ const save_edition = {
         } else if (row === 10 || row === 11) {
             row = 7; //21:00 - 22:45h
         }
-        dia = isCod ? col - 1 : col - 2;
+        
         let infosParCell = {
             "cod_disc" : cod_db,
             "professor" : vUserProf,
@@ -63,34 +68,51 @@ const save_edition = {
             },
             success: (data) => {
                 const erros = data["erros"]
+                const alertas = data["alertas"]
                 const cred_err = erros.hasOwnProperty("credito")
                 const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
                 
                 if(prof_hr_err){
-                    const cell = $(cell_cod).next().get(0);
-                    if(content["tipo"] == "u" && content.hasOwnProperty('ant_prof')){
+                    const cell = $(cell_cod).next();
+                    col++;
+                    if(content["tipo"] === "u" && content.hasOwnProperty('ant_prof')){
                         $(cell).html(content["ant_prof"]);
 
-                    }else if(content["tipo"] == "i" && content.hasOwnProperty('ant_prof')){
+                    }else if(content["tipo"] === "i"){
                         $(cell).html(""); 
                     }
                     openModal("ERRO", erros["prof_msm_hr"]);
-                    editable.edit(cell, row, col);
+                    $('#myModal').on('hidden.bs.modal', function () {
+                        editable.edit(cell.get(0), row, col);
+                        return;
+                    });
                     
                 }else if(cred_err) {
                     if(content["tipo"] == "u" && content.hasOwnProperty('ant_cod')){
                         $(cell_cod).html(content["ant_cod"]);
 
-                    }else if(content["tipo"] == "i" && content.hasOwnProperty('ant_prof')){
+                    }else if(content["tipo"] == "i"){
                         $(cell_cod).html("");
                     }
 
                     openModal("ERRO", erros["credito"]);
-                    editable.edit(cell_cod, row, col);        
-                }
+                    $('#myModal').on('hidden.bs.modal', function () {
+                        editable.edit(cell_cod, row, col);
+                        return;
+                    });       
+                }else if(Object.keys(alertas).length !== 0){
 
-                
-                //openModal(data["alertas"]);
+                    let alerta_msg = "";
+
+                    if(alertas.hasOwnProperty("aula_manha_noite")){
+                        alerta_msg += alertas["aula_manha_noite"]
+                    }
+
+                    if(alertas.hasOwnProperty("aula_noite_outro_dia_manha")){
+                        alerta_msg += alertas["aula_noite_outro_dia_manha"]
+                    }
+                    openModal("Warning(s)", alerta_msg);
+                }
             },
             error: (error) => {
                 alert("Ocorreu um erro ao manipular as informações");
