@@ -199,38 +199,47 @@ def redirect(request):
 
 def save_modify(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    if is_ajax:
-        if request.method == 'POST':
-            data = json.load(request)
-            info_par = data["info"]
-            ano = datetime.now().year
-
-            erros = {}
-            if info_par["tipo"] == "d":
-                erros["delecao"] = deletar_valor(info_par, ano)
-            
-            elif info_par["tipo"] == "i":
-                #tratar caso de uma mesma turma ter 2 profs diferentes(RESTRIÇÃO)
-                  
-                turma_obj = cadastrar_turma(info_par, ano)
-                erros["credito"] = atualizar_dia(turma_obj, info_par, ano)
-            
-            elif info_par["tipo"] == "u":
-                if "ant_prof" in info_par:
-                    update_prof(info_par, ano)
-
-                elif "ant_cod" in info_par:
-                    erros["credito"] = update_cod(info_par, ano)
+    if not is_ajax: return HttpResponseBadRequest('Invalid request')
+    if request.method != 'POST': return JsonResponse({'status': 'Invalid request'}, status=400)
     
+    data = json.load(request)
+    info_par = data["info"]
+    ano = datetime.now().year
 
-            return JsonResponse({'status': erros })
+    erros = {}
+    alertas = {}
+
+    if info_par["tipo"] == "d":
+        deletar_valor(info_par, ano, erros)
+    
+    elif info_par["tipo"] == "i":
+        #tratar caso de uma mesma turma ter 2 profs diferentes(RESTRIÇÃO)
+        aula_manha_noite(data, alertas)
+        aula_noite_outro_dia_manha(data, alertas)
+                    
+        if not aula_msm_horario(info_par, ano, data, erros):
+            turma_obj = cadastrar_turma(info_par, ano)
+            atualizar_dia(turma_obj, info_par, ano, erros)
         
-        return JsonResponse({'status': 'Invalid request'}, status=400)
-    else:
-        return HttpResponseBadRequest('Invalid request')
     
+    elif info_par["tipo"] == "u":
 
-def download_zip_planilhas(request):
+        if "ant_prof" in info_par:    
+            aula_manha_noite(data, alertas)
+            aula_noite_outro_dia_manha(data, alertas)
+            
+            if not aula_msm_horario(info_par, ano, data, erros): 
+                update_prof(info_par, ano)
+
+        elif "ant_cod" in info_par:
+            update_cod(info_par, ano, erros)
+                
+
+    return JsonResponse({'erros': erros, 'alertas': alertas})
+    
+    
+    
+def download_excel_data(request):
     # content-type of response
     if request.method == "POST":
 
