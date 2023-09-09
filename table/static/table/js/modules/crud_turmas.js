@@ -1,5 +1,5 @@
 export {save_edition};
-import { cods_auto_ext, cods_auto_obrig, semestre, openModal, editable} from "../main.js";
+import { cods_auto_ext, cods_auto_obrig, semestre} from "../main.js";
 
 const save_edition = {
     
@@ -32,20 +32,20 @@ const save_edition = {
         } else if (row === 10 || row === 11) {
             row = 7; //21:00 - 22:45h
         }
-        dia = isCod ? col - 1 : col - 2;
+        col = isCod ? col - 1 : col - 2;
         let infosParCell = {
             "cod_disc" : cod_db,
             "professor" : vUserProf,
             "horario": row,
-            "dia": dia,
+            "dia": col,
             "cod_turma": lastCellContent,
             "tipo": type
         }
         
         if(type === "u") infosParCell = $.extend(infosParCell, vl);
-        save_edition.requisicao(infosParCell, cell, row, col);
+        save_edition.requisicao(infosParCell);
     },
-    requisicao: (content, cell_cod, row, col) => {
+    requisicao: (content) => {
         const myEvent = { 
             info: content,
             semestre: semestre,
@@ -62,38 +62,10 @@ const save_edition = {
               "X-CSRFToken": getCookie("csrftoken"), 
             },
             success: (data) => {
-                const erros = data["erros"]
-                const cred_err = erros.hasOwnProperty("credito")
-                const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
-                
-                if(prof_hr_err){
-                    const cell = $(cell_cod).next().get(0);
-                    if(content["tipo"] == "u" && content.hasOwnProperty('ant_prof')){
-                        $(cell).html(content["ant_prof"]);
-
-                    }else if(content["tipo"] == "i" && content.hasOwnProperty('ant_prof')){
-                        $(cell).html(""); 
-                    }
-                    openModal("ERRO", erros["prof_msm_hr"]);
-                    editable.edit(cell, row, col);
-                    
-                }else if(cred_err) {
-                    if(content["tipo"] == "u" && content.hasOwnProperty('ant_cod')){
-                        $(cell_cod).html(content["ant_cod"]);
-
-                    }else if(content["tipo"] == "i" && content.hasOwnProperty('ant_prof')){
-                        $(cell_cod).html("");
-                    }
-
-                    openModal("ERRO", erros["credito"]);
-                    editable.edit(cell_cod, row, col);        
-                }
-
-                
-                //openModal(data["alertas"]);
+              console.log(data);
             },
             error: (error) => {
-                alert("Ocorreu um erro ao manipular as informações");
+              console.log(error);
             }
         });
     }

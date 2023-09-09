@@ -13,16 +13,7 @@ const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
 // exportando para o crud_turmas
-export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable}; 
-
-//exibe a caixa de mensagens para alertas
-function openModal(title, messages) {
-    const modalBody = document.getElementById("modalBody");
-    modalBody.innerText = messages;
-    $("#myModalLabel").html(title);
-    const myModal = new bootstrap.Modal(document.getElementById("myModal"));
-    myModal.show();
-}
+export {cods_auto_ext, cods_auto_obrig, semestre}; 
 
 $(document).ready(function () {
     
@@ -49,7 +40,15 @@ $(document).ready(function () {
         }
         });
     });
-      
+    
+    //exibe a caixa de mensagens para alertas
+    function openModal(messages) {
+        const modalBody = document.getElementById("modalBody");
+        modalBody.innerText = messages;
+        const myModal = new bootstrap.Modal(document.getElementById("myModal"));
+        myModal.show();
+    }
+    
     //Lida com os detalhes do professor
     $(function() {
         $("#prof").autocomplete({
@@ -203,221 +202,221 @@ $(document).ready(function () {
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex);
         
     }
-});
 
-//Manipula o processo de edição das células
-const editable = {
-    icon: null,
-    rowIndex: 0,
-    colIndex: 0,
-    selected : null, // current selected cell
-    previousValue : "",
+   //Manipula o processo de edição das células
+    const editable = {
+        icon: null,
+        rowIndex: 0,
+        colIndex: 0,
+        selected : null, // current selected cell
+        previousValue : "",
 
-    // (B) "CONVERT" TO EDITABLE CELL
-    edit: (cell, row, col) => {
-        
-        $('#checkRestricaoHro').prop('checked', false);
-        // Remove ícone presente na célula
-        $('#tbl1').find('i').remove();
-        
-        // Remove a classe 'red-transparent' das células marcadas
-        if(transparent){
-            $(cell).closest('table').find('td.red-transparent').removeClass('red-transparent');
-            markCells = !markCells;
-            transparent = false;
-        }
+        // (B) "CONVERT" TO EDITABLE CELL
+        edit: (cell, row, col) => {
+            
+            $('#checkRestricaoHro').prop('checked', false);
+            // Remove ícone presente na célula
+            $('#tbl1').find('i').remove();
+            
+            // Remove a classe 'red-transparent' das células marcadas
+            if(transparent){
+                $(cell).closest('table').find('td.red-transparent').removeClass('red-transparent');
+                markCells = !markCells;
+                transparent = false;
+            }
 
-        editable.previousValue = $(cell).html().replace(/&nbsp;/g, '').trim();
-        editable.rowIndex = row;
-        editable.colIndex = col;
+            editable.previousValue = $(cell).html().replace(/&nbsp;/g, '').trim();
+            editable.rowIndex = row;
+            editable.colIndex = col;
 
-        // (B1) REMOVE "DOUBLE CLICK TO EDIT"
-        cell.ondblclick = "";
-                    
-        // (B2) EDITABLE CONTENT
-        $(cell).attr("contenteditable", "true");
-        $(cell).focus();
-        
-        // (B2.1) ADD AUTOCOMPLETE
-        if (col % 2 === 0){
-            //autocompleta com o nome do professor
-            $(cell).autocomplete({
-                source: function(request, response) {
-                    const results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
-                    response(results.slice(0, 3));
-                },
-                minLength: 2,
-                select: function(event, ui) {
-                    const nomeProf = ui.item.value;
-                    const apelidoProf = auto_profs[nomeProf];
-                    $(cell).html(apelidoProf);
-                    return false;
-                }
-            }).focus(function() {
-                $(this).autocomplete("search");
-            });    
-        }else {
-            //autocompleta com a matéria
-            $(cell).autocomplete({
-                source: function(request, response) {
-                    let results;
-                    //linhas entre [4,6] são do vespertino
-                    if (row >= 4 && row <= 6) {
-                        results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext)), request.term);
-                    } else {
-                        results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
+            // (B1) REMOVE "DOUBLE CLICK TO EDIT"
+            cell.ondblclick = "";
+                        
+            // (B2) EDITABLE CONTENT
+            $(cell).attr("contenteditable", "true");
+            $(cell).focus();
+            
+            // (B2.1) ADD AUTOCOMPLETE
+            if (col % 2 === 0){
+                //autocompleta com o nome do professor
+                $(cell).autocomplete({
+                    source: function(request, response) {
+                        const results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
+                        response(results.slice(0, 3));
+                    },
+                    minLength: 2,
+                    select: function(event, ui) {
+                        const nomeProf = ui.item.value;
+                        const apelidoProf = auto_profs[nomeProf];
+                        $(cell).html(apelidoProf);
+                        return false;
                     }
-                    response(results.slice(0, 4));
-                },
-                minLength: 2,
-                select: function(event, ui) {
-                    $(cell).html(ui.item.value);
+                }).focus(function() {
+                    $(this).autocomplete("search");
+                });    
+            }else {
+                //autocompleta com a matéria
+                $(cell).autocomplete({
+                    source: function(request, response) {
+                        let results;
+                        //linhas entre [4,6] são do vespertino
+                        if (row >= 4 && row <= 6) {
+                            results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext)), request.term);
+                        } else {
+                            results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
+                        }
+                        response(results.slice(0, 4));
+                    },
+                    minLength: 2,
+                    select: function(event, ui) {
+                        $(cell).html(ui.item.value);
+                        return false;
+                    }
+                }).focus(function() {
+                    $(this).autocomplete("search");
+                });
+                
+            }
+
+            // (C3) "MARK" CURRENT SELECTED CELL
+            editable.selected = cell;
+            
+            // (C4) PRESS ENTER/ESC OR CLICK OUTSIDE TO END EDIT
+            // A ideia do ESC é recuperar o valor de antes do usuário modificar
+            // ainda falta implementar
+            window.addEventListener("click", editable.close);
+            cell.onkeydown = evt => {
+                if (evt.key=="Enter" || evt.key=="Escape") {
+                    editable.close(evt.key=="Enter" ? true : false);
                     return false;
                 }
-            }).focus(function() {
-                $(this).autocomplete("search");
-            });
-            
-        }
+            };
 
-        // (C3) "MARK" CURRENT SELECTED CELL
-        editable.selected = cell;
-        
-        // (C4) PRESS ENTER/ESC OR CLICK OUTSIDE TO END EDIT
-        // A ideia do ESC é recuperar o valor de antes do usuário modificar
-        // ainda falta implementar
-        window.addEventListener("click", editable.close);
-        cell.onkeydown = evt => {
-            if (evt.key=="Enter" || evt.key=="Escape") {
-                editable.close(evt.key=="Enter" ? true : false);
-                return false;
-            }
-        };
+        },
 
-    },
+        removeEditable: (selected) =>{
+            // (C2) REMOVE "EDITABLE"
+            window.getSelection().removeAllRanges();
+            $(selected).attr("contenteditable", "false");
 
-    removeEditable: (selected) =>{
-        // (C2) REMOVE "EDITABLE"
-        window.getSelection().removeAllRanges();
-        $(selected).attr("contenteditable", "false");
+            // (C3) RESTORE CLICK LISTENERS
+            window.removeEventListener("click", editable.close);
+            selected.onkeydown = "";
+            selected.ondblclick = () => editable.edit(selected);
+        },
 
-        // (C3) RESTORE CLICK LISTENERS
-        window.removeEventListener("click", editable.close);
-        selected.onkeydown = "";
-        selected.ondblclick = () => editable.edit(selected);
-    },
-
-    // (C) END "EDIT MODE"
-    close: evt => {
-        if (evt.target !== editable.selected) {
-            const valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
-            const col = editable.colIndex;
-            const row = editable.rowIndex;
-            
-            // tira ícones que podem estar nas células posterior e anterior
-            $('#tbl1').find("i").remove();
-
-            const nextCell = $(editable.selected).next();
-            const prevCell = $(editable.selected).prev();
-            const colCod = col % 2 !== 0;
-            let validInput = false;
-
-            if (colCod && valueUser !== "") {
-                let ExistMtr = false;
-                if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
-
-                if(row >= 4 && row <= 6 && cods_auto_ext.hasOwnProperty(valueUser))  ExistMtr = true; 
+        // (C) END "EDIT MODE"
+        close: evt => {
+            if (evt.target !== editable.selected) {
+                const valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
+                const col = editable.colIndex;
+                const row = editable.rowIndex;
                 
-                if (!ExistMtr) {
-                    openModal("ERRO", "Matéria de código inválido! Consulte os valores na tabela.");
-                    $('#myModal').on('hidden.bs.modal', function () {
-                        $(editable.selected).html("");
-                        editable.removeEditable(editable.selected);
-                        //Foca novamente na célula se a entrada for inválida
-                        editable.edit(editable.selected, row, col);
-                        return;
-                    });
+                // tira ícones que podem estar nas células posterior e anterior
+                $('#tbl1').find("i").remove();
+
+                const nextCell = $(editable.selected).next();
+                const prevCell = $(editable.selected).prev();
+                const colCod = col % 2 !== 0;
+                let validInput = false;
+
+                if (colCod && valueUser !== "") {
+                    let ExistMtr = false;
+                    if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
+
+                    if(row >= 4 && row <= 6 && cods_auto_ext.hasOwnProperty(valueUser))  ExistMtr = true; 
                     
-                }else{
-                    validInput = true;
-                }
+                    if (!ExistMtr) {
+                        openModal("Matéria de código inválido! Consulte os valores na tabela.");
+                        $('#myModal').on('hidden.bs.modal', function () {
+                            $(editable.selected).html("");
+                            editable.removeEditable(editable.selected);
+                            //Foca novamente na célula se a entrada for inválida
+                            editable.edit(editable.selected, row, col);
+                            return;
+                        });
+                        
+                    }else{
+                        validInput = true;
+                    }
 
-            }else if(valueUser !== ""){
-                let ExistProf = false;
+                }else if(valueUser !== ""){
+                    let ExistProf = false;
 
-                const nomeEncontrado = Object.keys(auto_profs).find(function(nome) {
-                    return auto_profs[nome] === valueUser;
-                });
-                  
-                if (nomeEncontrado) ExistProf = true 
-                
-                if(!ExistProf){
-                    openModal("ERRO", "Nome do professor incorreto.");
-                    $('#myModal').on('hidden.bs.modal', function () {
-                        $(editable.selected).html("");
-                        editable.removeEditable(editable.selected);
-                        //Foca novamente na célula se a entrada for inválida
-                        editable.edit(editable.selected, row, col);
-                        return;
+                    const nomeEncontrado = Object.keys(auto_profs).find(function(nome) {
+                        return auto_profs[nome] === valueUser;
                     });
-                }else{
-                    validInput = true;
+                      
+                    if (nomeEncontrado) ExistProf = true 
+                    
+                    if(!ExistProf){
+                        openModal("Nome do professor incorreto.");
+                        $('#myModal').on('hidden.bs.modal', function () {
+                            $(editable.selected).html("");
+                            editable.removeEditable(editable.selected);
+                            //Foca novamente na célula se a entrada for inválida
+                            editable.edit(editable.selected, row, col);
+                            return;
+                        });
+                    }else{
+                        validInput = true;
+                    }
+                    
+                }
+        
+                editable.removeEditable(editable.selected);
+
+                //Exceção das duas células da segunda linha do vespertino 1
+                //A próxima coluna e a anterior podem ser indefinidas
+                const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+                const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+                const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
+                const parImcompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
+
+                // (C4) Se a célula ao lado estiver vazia ela fica editável
+                //o indice 0 tem o elemento DOM da célula
+                if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1);
+                if(parImcompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
+
+                //(C5) Se o par de células estiver completo chama o save_edition
+                let vl = {};
+                if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
+                || (!colCod && !parImcompletoEsquerda && valueUser !== ""))){
+                    //"i/u" == insert/update
+
+                    if(editable.previousValue !== ""){
+                        //update
+                        if(colCod)
+                            vl["ant_cod"] = editable.previousValue;
+                        else
+                            vl["ant_prof"] = editable.previousValue;
+
+                        save_edition.extrairDados(editable.selected, col, row, colCod, "u", vl);
+                    }else{
+                        //insert
+                        save_edition.extrairDados(editable.selected, col, row, colCod, "i", vl);
+                    }
+                }
+
+                //(C6) caso de deleção
+                //====> arrumar o bug de quando vai deletar mas aperta enter antes de apagar td
+                if(editable.previousValue !== "" && valueUser === ""){
+                    if(colCod){
+                        vl["pf"] = valueNextCell;
+                        vl["cod"] = editable.previousValue;
+                        nextCell.html("");
+                    }else{
+                        vl["pf"] = editable.previousValue;
+                        vl["cod"] = valuePrevCell;
+                        prevCell.html("");
+                    }
+                    //"d" == delete
+                    save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
                 }
                 
             }
-    
-            editable.removeEditable(editable.selected);
-
-            //Exceção das duas células da segunda linha do vespertino 1
-            //A próxima coluna e a anterior podem ser indefinidas
-            const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
-            const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
-            const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
-            const parImcompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
-
-            // (C4) Se a célula ao lado estiver vazia ela fica editável
-            //o indice 0 tem o elemento DOM da célula
-            if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1);
-            if(parImcompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
-
-            //(C5) Se o par de células estiver completo chama o save_edition
-            let vl = {};
-            if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
-            || (!colCod && !parImcompletoEsquerda && valueUser !== ""))){
-                //"i/u" == insert/update
-
-                if(editable.previousValue !== ""){
-                    //update
-                    if(colCod)
-                        vl["ant_cod"] = editable.previousValue;
-                    else
-                        vl["ant_prof"] = editable.previousValue;
-
-                    save_edition.extrairDados(editable.selected, col, row, colCod, "u", vl);
-                }else{
-                    //insert
-                    save_edition.extrairDados(editable.selected, col, row, colCod, "i", vl);
-                }
-            }
-
-            //(C6) caso de deleção
-            //====> arrumar o bug de quando vai deletar mas aperta enter antes de apagar td
-            if(editable.previousValue !== "" && valueUser === ""){
-                if(colCod){
-                    vl["pf"] = valueNextCell;
-                    vl["cod"] = editable.previousValue;
-                    nextCell.html("");
-                }else{
-                    vl["pf"] = editable.previousValue;
-                    vl["cod"] = valuePrevCell;
-                    prevCell.html("");
-                }
-                //"d" == delete
-                save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
-            }
-            
         }
-    }
-};
+    };
+});
 
 
