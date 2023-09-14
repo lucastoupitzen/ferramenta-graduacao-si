@@ -8,7 +8,7 @@ const cods_auto_ext = JSON.parse(document.getElementById("cods_auto_ext").textCo
 const cods_auto_obrig = JSON.parse(document.getElementById("cods_auto_obrig").textContent);
 const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
-
+const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
@@ -92,9 +92,13 @@ $(document).ready(function () {
         if ($(this).is(':checked')) {
             let cells = $('#tbl1 td');
             let apelidoProf = $('#apelido').text();
-            let indexes = getCellIndexes(apelidoProf);
+            let indexes = getCellIndexes(apelidoProf)[0];
             indexes.forEach(function (index) {
                 cells.eq(index).addClass('red-transparent');
+            });
+            let indexes_imped = getCellIndexes(apelidoProf)[1];
+            indexes_imped.forEach(function (index) {
+                cells.eq(index).addClass('red-impedimento');
             });
             transparent = true;
         }else{
@@ -106,8 +110,14 @@ $(document).ready(function () {
     // Função para obter índices de células das restrições de horário de um professor
     function getCellIndexes(cellName) {
         const indexes = [];
+        const indexes_rest = [];
+        const indexes_imped = []
         const rest_prof = restricos_hro[cellName]
-        indexes.push(...rest_prof);
+        const impedimentos = impedimentos_totais[cellName]
+        indexes_rest.push(...rest_prof);
+        indexes_imped.push(...impedimentos);
+        indexes.push(indexes_rest)
+        indexes.push(indexes_imped)
         return indexes;
     }
 
