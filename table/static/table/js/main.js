@@ -8,7 +8,7 @@ const cods_auto_ext = JSON.parse(document.getElementById("cods_auto_ext").textCo
 const cods_auto_obrig = JSON.parse(document.getElementById("cods_auto_obrig").textContent);
 const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
-
+const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
@@ -28,6 +28,7 @@ function openModal(title, messages) {
 // Variáveis de controle para o ícone
 let markCells = false;
 let transparent = false;
+let impedimento = false;
  
 
 $(document).ready(function () {
@@ -82,6 +83,7 @@ $(document).ready(function () {
     // Manipula o clique no ícone de "X" para fechar os detalhes do professor
     $('#fechar_info').click(function() {
         $('.red-transparent').removeClass('red-transparent');
+        $('.red-impedimento').removeClass('red-impedimento');
         $('#prof').val("");
         $('#infos_prof').hide(); 
     });
@@ -92,22 +94,35 @@ $(document).ready(function () {
         if ($(this).is(':checked')) {
             let cells = $('#tbl1 td');
             let apelidoProf = $('#apelido').text();
-            let indexes = getCellIndexes(apelidoProf);
+            let indexes = getCellIndexes(apelidoProf)[0];
             indexes.forEach(function (index) {
                 cells.eq(index).addClass('red-transparent');
             });
+            let indexes_imped = getCellIndexes(apelidoProf)[1];
+            indexes_imped.forEach(function (index) {
+                cells.eq(index).addClass('red-impedimento');
+            });
             transparent = true;
+            impedimento = true;
         }else{
             $('.red-transparent').removeClass('red-transparent');
+            $('.red-impedimento').removeClass('red-impedimento');
             transparent = false;
+            impedimento = true;
         }
     });
 
     // Função para obter índices de células das restrições de horário de um professor
     function getCellIndexes(cellName) {
         const indexes = [];
+        const indexes_rest = [];
+        const indexes_imped = []
         const rest_prof = restricos_hro[cellName]
-        indexes.push(...rest_prof);
+        const impedimentos = impedimentos_totais[cellName]
+        indexes_rest.push(...rest_prof);
+        indexes_imped.push(...impedimentos);
+        indexes.push(indexes_rest)
+        indexes.push(indexes_imped)
         return indexes;
     }
 
@@ -142,17 +157,21 @@ $(document).ready(function () {
         if (markCells) {
             icon.removeClass('fa-clock-o').addClass('fa-check-circle');
             icon.closest('table').find('td').removeClass('red-transparent');
-        
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
             const cellContent = icon.parent().text().trim();
-            const indexes = getCellIndexes(cellContent);
+            const indexes = getCellIndexes(cellContent)[0];
+            const indexes_imp = getCellIndexes(cellContent)[1]
             
             if (indexes.length > 0) {
                 indexes.forEach(function (index) {
                     cells.eq(index).addClass('red-transparent');
                 });
                 transparent = true;
+                indexes_imp.forEach(function (index) {
+                    cells.eq(index).addClass('red-impedimento');
+                });
+                impedimento = true;
             } else {
                  // Remove todas as mensagens flutuantes existentes
                 $('.floating-message').remove();
@@ -185,6 +204,7 @@ $(document).ready(function () {
         } else {
             icon.removeClass('fa-check-circle').addClass('fa-clock-o');
             icon.closest('table').find('td').removeClass('red-transparent');
+            icon.closest('table').find('td').removeClass('red-impedimento');
             transparent = false;
         }   
     });

@@ -38,6 +38,7 @@
     {{ mtr_auto_nome|json_script:"mtr_auto_nome"}}
     {{ auto_profs|json_script:"auto_profs"}}
     {{ rest_horarios|json_script:"rest"}}
+    {{ impedimentos_totais|json_script:"impedimentos_totais"}}
 
     <title>Cronograma</title>
     
@@ -45,6 +46,9 @@
         .red-transparent {
             border: 2px solid #ff0000;
             box-shadow: inset 0 0 0 1px #ff0000;
+        }
+        .red-impedimento {
+            background-color: #ff00004a;
         }
         /* Estilos para a mensagem flutuante */
         .floating-message {
