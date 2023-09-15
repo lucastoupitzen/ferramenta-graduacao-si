@@ -124,8 +124,6 @@ def index(request, semestre="2"):
             #impedimento total
             if rest_prof.impedimento == True:
                 impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
-                print(impedimentos_totais)
-                print(len(impedimentos_totais))
 
     
 

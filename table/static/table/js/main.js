@@ -28,6 +28,7 @@ function openModal(title, messages) {
 // Variáveis de controle para o ícone
 let markCells = false;
 let transparent = false;
+let impedimento = false;
  
 
 $(document).ready(function () {
@@ -82,6 +83,7 @@ $(document).ready(function () {
     // Manipula o clique no ícone de "X" para fechar os detalhes do professor
     $('#fechar_info').click(function() {
         $('.red-transparent').removeClass('red-transparent');
+        $('.red-impedimento').removeClass('red-impedimento');
         $('#prof').val("");
         $('#infos_prof').hide(); 
     });
@@ -101,9 +103,12 @@ $(document).ready(function () {
                 cells.eq(index).addClass('red-impedimento');
             });
             transparent = true;
+            impedimento = true;
         }else{
             $('.red-transparent').removeClass('red-transparent');
+            $('.red-impedimento').removeClass('red-impedimento');
             transparent = false;
+            impedimento = true;
         }
     });
 
@@ -152,17 +157,21 @@ $(document).ready(function () {
         if (markCells) {
             icon.removeClass('fa-clock-o').addClass('fa-check-circle');
             icon.closest('table').find('td').removeClass('red-transparent');
-        
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
             const cellContent = icon.parent().text().trim();
-            const indexes = getCellIndexes(cellContent);
+            const indexes = getCellIndexes(cellContent)[0];
+            const indexes_imp = getCellIndexes(cellContent)[1]
             
             if (indexes.length > 0) {
                 indexes.forEach(function (index) {
                     cells.eq(index).addClass('red-transparent');
                 });
                 transparent = true;
+                indexes_imp.forEach(function (index) {
+                    cells.eq(index).addClass('red-impedimento');
+                });
+                impedimento = true;
             } else {
                  // Remove todas as mensagens flutuantes existentes
                 $('.floating-message').remove();
@@ -195,6 +204,7 @@ $(document).ready(function () {
         } else {
             icon.removeClass('fa-check-circle').addClass('fa-clock-o');
             icon.closest('table').find('td').removeClass('red-transparent');
+            icon.closest('table').find('td').removeClass('red-impedimento');
             transparent = false;
         }   
     });
