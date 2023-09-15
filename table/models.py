@@ -135,6 +135,8 @@ class Restricao(models.Model):
     )
     semestre = models.CharField(max_length=15, choices=SEMESTRE_CHOICES, default=None)
 
+    impedimento = models.BooleanField(default=False)
+
     class Meta:
         unique_together = (("nro_usp", "periodo", "dia", "semestre"),)
 
@@ -142,7 +144,7 @@ class Restricao(models.Model):
         return f"{self.nro_usp.Apelido} ({str(self.periodo)} / {str(self.dia)})"
 
     @classmethod
-    def criar_restricoes(cls, periodo, dia, nro_usp, semestre, motivos=None):
+    def criar_restricoes(cls, periodo, dia, nro_usp, semestre, impedimento=False, motivos=None):
         if periodo == "todos_periodos" and dia == "todos_dias":
             raise ValueError(
                 "A restrição não pode ser em todos os dias e em todos os períodos ao mesmo tempo."
@@ -151,19 +153,19 @@ class Restricao(models.Model):
         # Cria uma lista de objetos de restrição para cada dia se a restrição for para todos os dias
         if dia == "todos_dias":
             restricoes = [
-                cls(periodo=periodo, dia=dia_opcao[0], nro_usp=nro_usp, motivos=motivos, semestre=semestre)
+                cls(periodo=periodo, dia=dia_opcao[0], nro_usp=nro_usp, motivos=motivos, semestre=semestre, impedimento=impedimento)
                 for dia_opcao in cls.DIA_CHOICES[1:]
             ]
             cls.objects.bulk_create(restricoes, ignore_conflicts=True)
 
         # Cria uma restrição normal, ou seja, para um dia e perído específico, não é necesário(apagar)
         elif periodo != "todos_periodos":
-            cls.objects.create(periodo=periodo, dia=dia, nro_usp=nro_usp, motivos=motivos, semestre=semestre)
+            cls.objects.create(periodo=periodo, dia=dia, nro_usp=nro_usp, motivos=motivos, semestre=semestre, impedimento=impedimento)
 
         # Cria uma lista de objetos de restrição para todos os período em um mesmo dia
         else:
             restricoes = [
-                cls(periodo=periodo_opcao[0], dia=dia, nro_usp=nro_usp, motivos=motivos, semestre=semestre)
+                cls(periodo=periodo_opcao[0], dia=dia, nro_usp=nro_usp, motivos=motivos, semestre=semestre, impedimento=impedimento)
                 for periodo_opcao in cls.PERIODO_CHOICES[1:]
             ]
             cls.objects.bulk_create(restricoes, ignore_conflicts=True)

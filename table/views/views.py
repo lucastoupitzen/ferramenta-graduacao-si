@@ -75,6 +75,7 @@ def index(request, semestre="2"):
     dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
     profs_objs = Professor.objects.all()
     restricoes_profs = {}
+    impedimentos_totais = {}
 
     #Decide quais restrição serão carregadas
     #Tem um erro de modelagem que precisa ser consertado,
@@ -91,12 +92,13 @@ def index(request, semestre="2"):
         detalhes_profs[nome] = [prof_obj.NomeProf, prof_obj.Apelido, prof_obj.pos_doc, prof_obj.pref_optativas, consideracao]
 
         # tentar melhorar desempenho da linha abaixo
-        restricoes = prof_obj.restricao_set.filter(semestre=s_rest)
-
+        restricoes = prof_obj.restricao_set.filter(semestre="1,2")
         restricoes_profs[str(prof_obj.Apelido)] = []
+
         for rest_prof in restricoes:
             list_rest_indice = []
             indice = dia_sem[rest_prof.dia] + rest_turno[rest_prof.periodo]
+            if rest_prof.impedimento: print(f"{prof_obj.Apelido} - {indice}")
             if rest_prof.periodo == "tarde" and rest_prof.dia == "segunda":
                 list_rest_indice = [indice, 23, 34, 35, 36, 37]
             elif rest_prof.periodo == "tarde":
@@ -119,6 +121,9 @@ def index(request, semestre="2"):
                 restricoes_profs[str(prof_obj.Apelido)] += list_rest_indice
             else:
                 restricoes_profs[str(prof_obj.Apelido)] = list_rest_indice
+            #impedimento total
+            if rest_prof.impedimento == True:
+                impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
     
 
@@ -180,6 +185,7 @@ def index(request, semestre="2"):
         "cods_tbl_hr_ext": cods_tbl_hr_ext,
         "mtr_auto_nome": mtr_auto_nome,
         "tables_info": tables_info,
+        "impedimentos_totais": impedimentos_totais,
     }
     return render(request, "table/index.html", context)
 

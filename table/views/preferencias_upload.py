@@ -56,17 +56,21 @@ def pref_horarios(row, prof_db, semestre_par):
         Restricao.criar_restricoes(
             periodo="todos_periodos", dia=dia, nro_usp=prof_db, semestre="2"
         )
-    elif row[36] is not None:
+    if semestre_par and row[36] is not None:
         dia = unidecode.unidecode(row[36].lower())
         # print(f"dia {dia} professor: {prof_db.NomeProf}")
         Restricao.criar_restricoes(
             periodo="todos_periodos", dia=dia, nro_usp=prof_db, semestre="1,2"
         )
+    
 
     if not semestre_par and row[34] is not None:
         dia, per = row[34].split()
         dia = unidecode.unidecode(dia.lower())
         per = unidecode.unidecode(per.lower())
+        Restricao.criar_restricoes(
+                periodo=per, dia=dia, nro_usp=prof_db, semestre="1,2", impedimento=True
+            )
         # print(f"dia: {dia} periodo: {per} professor: {prof_db.NomeProf}")
         rest = prof_db.restricao_set.filter(
             dia=dia, periodo=per, semestre="1,2"
@@ -85,3 +89,10 @@ def pref_horarios(row, prof_db, semestre_par):
             rest.motivos = mtv_prof
 
         rest.save()
+    
+    if  row[36] is not None:
+        dia = unidecode.unidecode(row[36].lower())
+        # print(f"dia {dia} professor: {prof_db.NomeProf}")
+        Restricao.criar_restricoes(
+            periodo="todos_periodos", dia=dia, nro_usp=prof_db, semestre="1,2"
+        )
