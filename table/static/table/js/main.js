@@ -9,6 +9,7 @@ const cods_auto_obrig = JSON.parse(document.getElementById("cods_auto_obrig").te
 const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
+console.log(impedimentos_totais);
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
@@ -220,7 +221,7 @@ $(document).ready(function () {
                 
         //coluna das turmas não deve ser editável
         if(colIndex == 11) return
-        console.log(colIndex)
+        
         // Verifica se o alvo do clique é o ícone
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex);
         
@@ -318,17 +319,30 @@ const editable = {
 
     },
 
-    removeEditable: (selected) =>{
-        // (C2) REMOVE "EDITABLE"
+    removeEditable: (selected, isCod, valueUser, v_nextCell, v_prevCell) =>{
+
+        // Impede o usuário de deixar um par imcompleto
+        let v_cell_lado;
+        let cell_lado;
+        if(isCod){
+            v_cell_lado = v_nextCell;
+            cell_lado = $(selected).next();
+        }else{
+            v_cell_lado = v_prevCell;
+            cell_lado = $(selected).prev();   
+        }
+        if(valueUser == "" && v_cell_lado != "") $(cell_lado).html("")
+
+        // REMOVE "EDITABLE"
         window.getSelection().removeAllRanges();
         $(selected).attr("contenteditable", "false");
 
-        // (C3) RESTORE CLICK LISTENERS
+        // RESTORE CLICK LISTENERS
         window.removeEventListener("click", editable.close);
         selected.onkeydown = "";
         selected.ondblclick = () => editable.edit(selected);
     },
-
+ 
     // (C) END "EDIT MODE"
     close: evt => {
         if (evt.target !== editable.selected) {
@@ -336,11 +350,15 @@ const editable = {
             const col = editable.colIndex;
             const row = editable.rowIndex;
             
+            
             // tira ícones que podem estar nas células posterior e anterior
             $('#tbl1').find("i").remove();
 
             const nextCell = $(editable.selected).next();
             const prevCell = $(editable.selected).prev();
+            const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+            const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+
             const colCod = col % 2 !== 0;
             let validInput = false;
 
@@ -351,15 +369,9 @@ const editable = {
                 if(row >= 4 && row <= 6 && cods_auto_ext.hasOwnProperty(valueUser))  ExistMtr = true; 
                 
                 if (!ExistMtr) {
-                    openModal("ERRO", "Matéria de código inválido! Consulte os valores na tabela.");
-                    $('#myModal').on('hidden.bs.modal', function () {
-                        $(editable.selected).html("");
-                        editable.removeEditable(editable.selected);
-                        //Foca novamente na célula se a entrada for inválida
-                        editable.edit(editable.selected, row, col);
-                        return;
-                    });
-                    
+                    const mgs_err = "Código de Matéria inválido, consulte o desejado na tabela abaixo";
+                    erro_entrada("Código de Matéria inválido, consulte o desejado na tabela abaixo", colCod, valueUser, valueNextCell, valuePrevCell)
+                   
                 }else{
                     validInput = true;
                 }
@@ -374,26 +386,18 @@ const editable = {
                 if (nomeEncontrado) ExistProf = true 
                 
                 if(!ExistProf){
-                    openModal("ERRO", "Nome do professor incorreto.");
-                    $('#myModal').on('hidden.bs.modal', function () {
-                        $(editable.selected).html("");
-                        editable.removeEditable(editable.selected);
-                        //Foca novamente na célula se a entrada for inválida
-                        editable.edit(editable.selected, row, col);
-                        return;
-                    });
+                    const mgs_err = "Nome do professor inválido";
+                    erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell);
                 }else{
                     validInput = true;
                 }
                 
             }
     
-            editable.removeEditable(editable.selected);
+            editable.removeEditable(editable.selected, colCod, valueUser, valueNextCell, valuePrevCell);
 
             //Exceção das duas células da segunda linha do vespertino 1
             //A próxima coluna e a anterior podem ser indefinidas
-            const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
-            const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
             const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
             const parImcompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
 
@@ -407,7 +411,6 @@ const editable = {
             if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
             || (!colCod && !parImcompletoEsquerda && valueUser !== ""))){
                 //"i/u" == insert/update
-
                 if(editable.previousValue !== ""){
                     //update
                     if(colCod)
@@ -442,4 +445,14 @@ const editable = {
     }
 };
 
-
+function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell){
+    openModal("ERRO", msg);
+    $('#myModal').on('hidden.bs.modal', () => {
+        if (editable.previousValue !== "") $(editable.selected).html(editable.previousValue);
+        else $(editable.selected).html("");
+        editable.removeEditable(editable.selected, isCod, v_User, v_nextCell, v_PrevCell);
+        // Foca novamente na célula se a entrada for inválida
+        editable.edit(editable.selected, editable.rowIndex, editable.colIndex);
+        return;
+    }); 
+}

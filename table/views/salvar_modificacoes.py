@@ -98,7 +98,8 @@ def aula_manha_noite(data, alertas):
                               Turmas__CoDisc__SemestreIdeal=data["semestre"])
     if manha_noite:
         dia = manha_noite.first().get_DiaSemana_display().lower()
-        alertas["aula_manha_noite"] = f"Professor(a) {inf['professor']} var estar dando aula de manhã e a noite na {dia}.\n"
+        alertas["aula_manha_noite"] = (f"Professor(a) {inf['professor']} vai "
+                                       f"estar dando aula de manhã e a noite na {dia}.\n")
     
 
 #a mesma observação da função imediatamente acima vale para essa
@@ -121,11 +122,12 @@ def aula_noite_outro_dia_manha(data, alertas):
     ind_lado_dia = int(inf["dia"]) + 2 if inf["horario"] == 7 else int(inf["dia"]) - 2
     hr = 0 if inf["horario"] == 7 else 7
     
-    noite_outro_dia_manha = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,\
+    dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,\
                              Turmas__NroUSP__Apelido=inf["professor"], \
                               Turmas__CoDisc__SemestreIdeal=data["semestre"])
-    if noite_outro_dia_manha:
-        dia = noite_outro_dia_manha.first().get_DiaSemana_display().lower()
+    
+    if dia_alerta:
+        dia = dia_alerta.first().get_DiaSemana_display().lower()
         dia_lado = dias[inf['dia']]
         
         if inf["horario"] == 0:
@@ -133,8 +135,8 @@ def aula_noite_outro_dia_manha(data, alertas):
             dia = dia_lado
             dia_lado = aux
 
-        alertas["aula_noite_outro_dia_manha"] = (f"Professor(a) {inf['professor']} vai estar dando "
-                                                f"aula na noite de {dia_lado} e de manhã na {dia}\n")
+        alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
+                          f"aula na noite de {dia_lado} e de manhã na {dia}\n")
     
     
 

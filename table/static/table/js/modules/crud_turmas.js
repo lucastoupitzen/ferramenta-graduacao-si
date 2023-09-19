@@ -108,8 +108,10 @@ const save_edition = {
                         alerta_msg += alertas["aula_manha_noite"]
                     }
 
-                    if(alertas.hasOwnProperty("aula_noite_outro_dia_manha")){
-                        alerta_msg += alertas["aula_noite_outro_dia_manha"]
+                    if(alertas.hasOwnProperty("alert2")){
+                        //Alerta de quando um msm professor dá aula no noturno 2
+                        // e no matutino 1 no dia posterior
+                        alerta_msg += alertas["alert2"]
                     }
                     openModal("Warning(s)", alerta_msg);
                 }

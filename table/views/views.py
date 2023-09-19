@@ -92,7 +92,8 @@ def index(request, semestre="2"):
         detalhes_profs[nome] = [prof_obj.NomeProf, prof_obj.Apelido, prof_obj.pos_doc, prof_obj.pref_optativas, consideracao]
 
         # tentar melhorar desempenho da linha abaixo
-        restricoes = prof_obj.restricao_set.filter(semestre="1,2")
+        restricoes = prof_obj.restricao_set.filter(semestre=s_rest)
+
         restricoes_profs[str(prof_obj.Apelido)] = []
 
         for rest_prof in restricoes:
@@ -125,7 +126,7 @@ def index(request, semestre="2"):
                 impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
     
-
+    print(impedimentos_totais)
     discs = Disciplina.objects.all()
     cods_tbl_hr = {}
     cods_tbl_hr_ext = {}  # códigos para preencher a tabela de matérias que não são do semestre selecionado
