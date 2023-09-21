@@ -130,7 +130,7 @@ class Restricao(models.Model):
     dia = models.CharField(max_length=15, choices=DIA_CHOICES)
     motivos = models.ForeignKey(MtvRestricao, on_delete=models.CASCADE, null=True, default=None, blank=True)
     SEMESTRE_CHOICES = (
-        ("1,2", "1 e 2 semestre"),
+        ("1", "1 semestre"),
         ("2", "2 semestre")
     )
     semestre = models.CharField(max_length=15, choices=SEMESTRE_CHOICES, default=None)

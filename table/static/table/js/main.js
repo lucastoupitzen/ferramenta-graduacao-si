@@ -9,7 +9,6 @@ const cods_auto_obrig = JSON.parse(document.getElementById("cods_auto_obrig").te
 const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
-console.log(impedimentos_totais);
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
@@ -207,6 +206,7 @@ $(document).ready(function () {
             icon.closest('table').find('td').removeClass('red-transparent');
             icon.closest('table').find('td').removeClass('red-impedimento');
             transparent = false;
+            impedimento = false
         }   
     });
 
@@ -249,6 +249,13 @@ const editable = {
             markCells = !markCells;
             transparent = false;
         }
+
+        if(impedimento){
+            $(cell).closest('table').find('td.red-impedimento').removeClass('red-impedimento');
+            markCells = !markCells;
+            impedimento = false;
+        }
+
 
         editable.previousValue = $(cell).html().replace(/&nbsp;/g, '').trim();
         editable.rowIndex = row;

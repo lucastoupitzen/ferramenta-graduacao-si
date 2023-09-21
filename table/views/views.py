@@ -80,7 +80,7 @@ def index(request, semestre="2"):
     #Decide quais restrição serão carregadas
     #Tem um erro de modelagem que precisa ser consertado,
     #as restrições de horário são só de primeiro semestre ou de segundo
-    s_rest = "2" if semestre % 2 else "1,2"
+    s_rest = "1" if semestre % 2 else "2"
 
     auto_profs = {} #para o autocomplete do nome do professor com apelido
     detalhes_profs = {}
@@ -95,6 +95,7 @@ def index(request, semestre="2"):
         restricoes = prof_obj.restricao_set.filter(semestre=s_rest)
 
         restricoes_profs[str(prof_obj.Apelido)] = []
+        impedimentos_totais[str(prof_obj.Apelido)] = []
 
         for rest_prof in restricoes:
             list_rest_indice = []
@@ -126,7 +127,6 @@ def index(request, semestre="2"):
                 impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
     
-    print(impedimentos_totais)
     discs = Disciplina.objects.all()
     cods_tbl_hr = {}
     cods_tbl_hr_ext = {}  # códigos para preencher a tabela de matérias que não são do semestre selecionado
@@ -173,6 +173,7 @@ def index(request, semestre="2"):
             if pref.nivel == row:
                 j = tbl_pref[0].index(pref.CoDisc.Abreviacao)
                 tbl_pref[row][j].append(pref.NumProf.Apelido)
+
 
     context = {
         "rest_horarios": restricoes_profs,
