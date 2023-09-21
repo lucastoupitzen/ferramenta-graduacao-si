@@ -10,6 +10,7 @@ const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textCo
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 
+
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
 // exportando para o crud_turmas
@@ -247,13 +248,14 @@ const editable = {
         // Remove a classe 'red-transparent' das células marcadas
         if(transparent){
             $(cell).closest('table').find('td.red-transparent').removeClass('red-transparent');
-            markCells = !markCells;
             transparent = false;
+            markCells = !markCells;
         }
 
+        //Como toda vez que o impedimento for verdadeiro a "transparent" é true,
+        //não é necessário negar novamente o markCells
         if(impedimento){
             $(cell).closest('table').find('td.red-impedimento').removeClass('red-impedimento');
-            markCells = !markCells;
             impedimento = false;
         }
 
@@ -295,6 +297,7 @@ const editable = {
                     //linhas entre [4,6] são do vespertino
                     if (row >= 4 && row <= 6) {
                         results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext)), request.term);
+                        
                     } else {
                         results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
                     }

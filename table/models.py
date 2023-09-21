@@ -101,7 +101,7 @@ class Dia(models.Model):
         unique_together = (("Horario", "DiaSemana"),)
 
     def __str__(self):
-        return self.get_DiaSemana_display() + "/" + self.get_Horario_display()
+        return f"{self.get_DiaSemana_display()}/{self.get_Horario_display()}"
 
 
 class MtvRestricao(models.Model):
