@@ -157,6 +157,7 @@ $(document).ready(function () {
         if (markCells) {
             icon.removeClass('fa-clock-o').addClass('fa-check-circle');
             icon.closest('table').find('td').removeClass('red-transparent');
+            icon.closest('table').find('td').removeClass('red-impedimento');
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
             const cellContent = icon.parent().text().trim();
