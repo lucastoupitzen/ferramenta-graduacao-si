@@ -66,10 +66,12 @@ $(document).ready(function () {
                 response(results);
             },
             minLength: 2, // Começa a exibir sugestões a partir de 2 caracteres
-            
             select: function(event, ui) {
                 // Função chamada quando um item é selecionado
                 // Carrega as informações de detalhes do professor 
+                $('.red-transparent').removeClass('red-transparent');
+                $('.red-impedimento').removeClass('red-impedimento');
+                $('#checkRestricaoHro').prop('checked', false);
                 const nome_prof = ui.item.value.trim().toLowerCase().normalize("NFD");
                 document.getElementById("nome").innerHTML = dtl_profs[nome_prof][0]|| "Sem informações";
                 document.getElementById("apelido").innerHTML = dtl_profs[nome_prof][1] || "Sem informações";
