@@ -33,7 +33,7 @@ def pref_disc_excel_impar(sem, row, prof_db, header):
 
 def pref_horarios(row, prof_db, semestre_par):
     if semestre_par:
-        MtvRestricao.objects.filter(restricao__semestre="2",restricao__nro_usp=prof_db).delete()
+        MtvRestricao.objects.filter(restricao__semestre="2", restricao__nro_usp=prof_db).delete()
         Restricao.objects.filter(semestre="2", nro_usp=prof_db).delete()
         values = [row for row in row[3:7]]
         dias_semana = ["segunda", "terca", "quarta", "quinta", "sexta"]
@@ -62,7 +62,6 @@ def pref_horarios(row, prof_db, semestre_par):
         Restricao.criar_restricoes(
             periodo="todos_periodos", dia=dia, nro_usp=prof_db, semestre="1"
         )
-    
 
     if not semestre_par and row[34] is not None:
         dia, per = row[34].split()
@@ -89,8 +88,8 @@ def pref_horarios(row, prof_db, semestre_par):
             rest.motivos = mtv_prof
 
         rest.save()
-    
-    if  row[36] is not None:
+
+    if row[36] is not None:
         dia = unidecode.unidecode(row[36].lower())
         # print(f"dia {dia} professor: {prof_db.NomeProf}")
         Restricao.criar_restricoes(

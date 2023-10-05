@@ -7,6 +7,7 @@ from openpyxl.reader.excel import load_workbook
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 import unicodedata
 
+
 from .planilha_distribuicao import *
 from .planilha_docentes import *
 from .salvar_modificacoes import *
@@ -20,7 +21,6 @@ def index(request, semestre="2"):
     tbl_vls.insert(3, ["", ""])
     ano = datetime.now().year
 
-
     vls_turmas = Turma.objects.filter(
         Q(CoDisc__SemestreIdeal=semestre, Ano=ano) | Q(Ano=ano, Eextra="S")
     )
@@ -33,7 +33,7 @@ def index(request, semestre="2"):
         dias_aulas = tur_materia.dia_set.all()
 
         for dia in dias_aulas:
-        
+
             col_tbl = int(dia.DiaSemana)
             row_tbl = int(dia.Horario)
 
@@ -70,26 +70,26 @@ def index(request, semestre="2"):
         else:
             tbl_vls[row][10] = 94
 
-
     rest_turno = {"manha": 0, "tarde": 22, "noite": 48}
     dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
     profs_objs = Professor.objects.all()
     restricoes_profs = {}
     impedimentos_totais = {}
 
-    #Decide quais restrição serão carregadas
-    #Tem um erro de modelagem que precisa ser consertado,
-    #as restrições de horário são só de primeiro semestre ou de segundo
+    # Decide quais restrição serão carregadas
+    # Tem um erro de modelagem que precisa ser consertado,
+    # as restrições de horário são só de primeiro semestre ou de segundo
     s_rest = "1" if semestre % 2 else "2"
 
-    auto_profs = {} #para o autocomplete do nome do professor com apelido
+    auto_profs = {}  # para o autocomplete do nome do professor com apelido
     detalhes_profs = {}
     for prof_obj in profs_objs:
-        #Já carrega dados necessários para as sugestões e detalhes do professor
+        # Já carrega dados necessários para as sugestões e detalhes do professor
         nome = unicodedata.normalize("NFD", prof_obj.NomeProf.lower())
         auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
         consideracao = prof_obj.consideracao1 if semestre % 2 else prof_obj.consideracao2
-        detalhes_profs[nome] = [prof_obj.NomeProf, prof_obj.Apelido, prof_obj.pos_doc, prof_obj.pref_optativas, consideracao]
+        detalhes_profs[nome] = [prof_obj.NomeProf, prof_obj.Apelido, prof_obj.pos_doc, prof_obj.pref_optativas,
+                                consideracao]
 
         # tentar melhorar desempenho da linha abaixo
         restricoes = prof_obj.restricao_set.filter(semestre=s_rest)
@@ -122,26 +122,33 @@ def index(request, semestre="2"):
                 restricoes_profs[str(prof_obj.Apelido)] += list_rest_indice
             else:
                 restricoes_profs[str(prof_obj.Apelido)] = list_rest_indice
-            #impedimento total
-            if rest_prof.impedimento == True:
+
+            # impedimento total
+            if rest_prof.impedimento:
                 impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
-    
     discs = Disciplina.objects.all()
     cods_tbl_hr = {}
     cods_tbl_hr_ext = {}  # códigos para preencher a tabela de matérias que não são do semestre selecionado
     mtr_auto_nome = {}  # auxilia no autocomplete para encontrar o código da turma extra
 
     for disc in discs:
-        if disc.SemestreIdeal == semestre:
+
+        if disc.SemestreIdeal == semestre or \
+                (semestre in [8, 7] and disc.TipoDisc == "optativaSI"):
             cods_tbl_hr[f"{disc.CoDisc} {disc.Abreviacao}"] = disc.CoDisc
+
         else:
             cods_tbl_hr_ext[f"{disc.CoDisc} {disc.Abreviacao}"] = disc.CoDisc
             mtr_auto_nome[disc.NomeDisc] = f"{disc.CoDisc} {disc.Abreviacao}"
 
 
-    #Serve para listar as disciplinas na página
-    vls_disciplinas = discs.filter(SemestreIdeal=semestre)
+    # Serve para listar as disciplinas na página
+    if semestre in [7, 8]:
+        vls_disciplinas = discs.filter(Q(SemestreIdeal=semestre) | Q(TipoDisc="optativaSI"))
+    else:
+        vls_disciplinas = discs.filter(SemestreIdeal=semestre)
+
     disc_obrig = vls_disciplinas.filter(TipoDisc="obrigatoria")
     tables_info = [
         {
@@ -174,7 +181,6 @@ def index(request, semestre="2"):
                 j = tbl_pref[0].index(pref.CoDisc.Abreviacao)
                 tbl_pref[row][j].append(pref.NumProf.Apelido)
 
-
     context = {
         "rest_horarios": restricoes_profs,
         "tbl_pref": tbl_pref,
@@ -206,9 +212,11 @@ def redirect(request):
 
 def save_modify(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    if not is_ajax: return HttpResponseBadRequest('Invalid request')
-    if request.method != 'POST': return JsonResponse({'status': 'Invalid request'}, status=400)
-    
+    if not is_ajax:
+        return HttpResponseBadRequest('Invalid request')
+    if request.method != 'POST':
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+
     data = json.load(request)
     info_par = data["info"]
     ano = datetime.now().year
@@ -218,42 +226,39 @@ def save_modify(request):
 
     if info_par["tipo"] == "d":
         deletar_valor(info_par, ano, erros)
-    
+
     elif info_par["tipo"] == "i":
-        #tratar caso de uma mesma turma ter 2 profs diferentes(RESTRIÇÃO)
+
         aula_manha_noite(data, alertas)
         aula_noite_outro_dia_manha(data, alertas)
-                    
+
         if not aula_msm_horario(info_par, ano, data, erros):
             turma_obj = cadastrar_turma(info_par, ano)
             atualizar_dia(turma_obj, info_par, ano, erros)
-        
-    
+
     elif info_par["tipo"] == "u":
 
-        if "ant_prof" in info_par:    
+        if "ant_prof" in info_par:
             aula_manha_noite(data, alertas)
             aula_noite_outro_dia_manha(data, alertas)
-            
-            if not aula_msm_horario(info_par, ano, data, erros): 
+
+            if not aula_msm_horario(info_par, ano, data, erros):
                 update_prof(info_par, ano)
 
         elif "ant_cod" in info_par:
             update_cod(info_par, ano, erros)
-                
 
     return JsonResponse({'erros': erros, 'alertas': alertas})
-    
-    
-    
+
+
 def download_zip_planilhas(request):
     # content-type of response
     if request.method == "POST":
 
-        #cria o arquivo zip
+        # cria o arquivo zip
         z = zipfile.ZipFile('Planilhas_graduação_SI.zip', 'w', zipfile.ZIP_DEFLATED)
 
-        #planilha de docentes
+        # planilha de docentes
         cwd = os.getcwd()
         file_path = os.path.join(cwd, "table/static/table/docentes.xlsx")
         source_workbook = load_workbook(filename=file_path)
@@ -262,12 +267,12 @@ def download_zip_planilhas(request):
         source_workbook.save("Docentes.xlsx")
         source_workbook.close()
         z.write("Docentes.xlsx")
-        
-        #planilha de distribuição semestres pares
+
+        # planilha de distribuição semestres pares
         planilha_distribuição_semestre("par")
         z.write("Distribuição_par.xlsx")
 
-        #planilha de distribuição semestres impares
+        # planilha de distribuição semestres impares
         planilha_distribuição_semestre("impar")
         z.write("Distribuição_impar.xlsx")
 
@@ -277,7 +282,7 @@ def download_zip_planilhas(request):
         response = HttpResponse(zip_arc, content_type='application/x-gzip')
         response["Content-Disposition"] = 'attachment; filename="Planilhas_graduação_SI.zip"'
 
-        #limpa os arquivos criados no processo
+        # limpa os arquivos criados no processo
         os.remove("Docentes.xlsx")
         os.remove("Distribuição_impar.xlsx")
         os.remove("Distribuição_par.xlsx")
@@ -297,7 +302,6 @@ def planilha_distribuição_semestre(semestre):
     planilha_extra(sheet_extra)
     wb.save(f"Distribuição_{semestre}.xlsx")
     wb.close()
-
 
 
 def pref_planilha(request):
@@ -339,6 +343,7 @@ def pref_planilha(request):
                 prof_encontrado = False
                 email_professor = False
 
+                # consultar direto o email
                 for prof in profs:
                     if email == prof.Email:
                         email_professor = email
@@ -348,6 +353,7 @@ def pref_planilha(request):
                     continue
 
                 semestre_par = True if excel_type == "pref_hro_2" else False
+                # executar essa linha direto, com o email da planilha usando o try catch
                 prof_db = Professor.objects.get(Email=email_professor)
 
                 if semestre_par:

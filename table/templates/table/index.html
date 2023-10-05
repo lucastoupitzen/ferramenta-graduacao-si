@@ -61,6 +61,11 @@
             font-size: 14px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        .custom-border td {
+            border-color: #C0C0C0;
+            border-width: 3px; 
+        }
+          
 
     </style>
 </head>
@@ -92,6 +97,7 @@
             </div>
         </div>
         <div id="url-data" data-url="{% url 'save_modify' %}"></div>
+        
         <table class="table table-bordered font-weight-bold editable" id="tbl1">
             <thead>
                 <tr class="table-secondary">
@@ -141,7 +147,7 @@
                     {%endfor%}
                     <td style="display:none;">3</td>
                 </tr>
-                <tr>
+                <tr class="custom-border">
                     <td class="align-middle text-center">{{tProfs.3.0}}</td>
                     <td class="align-middle text-center">{{tProfs.3.1}}</td>
                 </tr>
@@ -152,7 +158,6 @@
                     {%endfor%}
                     <td style="display:none;">3</td>
                 </tr>
-
                 <th colspan="12" class="table-secondary p-4"></th>
                 <tr>
                     <th scope="row" rowspan="2" class="align-middle text-center">Noturno 1 19:00 - 20:45h</th>
@@ -160,9 +165,9 @@
                     <td class="align-middle text-center">{{i}}</td>
                     {%endfor%}
                 </tr>
-                <tr>
+                <tr class="custom-border">
                     {%for i in tProfs.6%}
-                    <td class="align-middle text-center">{{i}}</td>
+                    <td class="align-middle text-center ">{{i}}</td>
                     {%endfor%}
                 </tr>
                 <tr>
@@ -171,7 +176,7 @@
                     <td class="align-middle text-center">{{i}}</td>
                     {%endfor%}
                 </tr>
-                <tr>
+                <tr class="custom-border">
                     {%for i in tProfs.8%}
                     <td class="align-middle text-center">{{i}}</td>
                     {%endfor%}
@@ -293,7 +298,6 @@
                             {%endif%} 
                         {% endfor %}
                         <a type="button" class="btn btn-secondary" href="{% url 'menupage' %}">Voltar Menu</a>
-                        
                     </div>
                 </div>
             </div>

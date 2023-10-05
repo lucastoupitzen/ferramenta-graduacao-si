@@ -91,8 +91,6 @@ $(document).ready(function () {
         $('#infos_prof').hide(); 
     });
 
-
-
     $('#checkRestricaoHro').change(function() {
         if ($(this).is(':checked')) {
             let cells = $('#tbl1 td');
@@ -253,7 +251,7 @@ const editable = {
             transparent = false;
             markCells = !markCells;
         }
-
+        
         //Como toda vez que o impedimento for verdadeiro a "transparent" é true,
         //não é necessário negar novamente o markCells
         if(impedimento){
@@ -383,7 +381,7 @@ const editable = {
                 
                 if (!ExistMtr) {
                     const mgs_err = "Código de Matéria inválido, consulte o desejado na tabela abaixo";
-                    erro_entrada("Código de Matéria inválido, consulte o desejado na tabela abaixo", colCod, valueUser, valueNextCell, valuePrevCell)
+                    erro_entrada(mgs_err, colCod, valueUser, valueNextCell, valuePrevCell)
                    
                 }else{
                     validInput = true;
@@ -400,7 +398,7 @@ const editable = {
                 
                 if(!ExistProf){
                     const mgs_err = "Nome do professor inválido";
-                    erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell);
+                    erro_entrada(msg_err, colCod, valueUser, valueNextCell, valuePrevCell);
                 }else{
                     validInput = true;
                 }
@@ -439,7 +437,6 @@ const editable = {
             }
 
             //(C6) caso de deleção
-            //====> arrumar o bug de quando vai deletar mas aperta enter antes de apagar td
             if(editable.previousValue !== "" && valueUser === ""){
                 if(colCod){
                     vl["pf"] = valueNextCell;

@@ -117,7 +117,7 @@ def aula_noite_outro_dia_manha(data, alertas):
     
     
     # Um dicionário para evitar mais uma consulta
-    dias = {0: "segunda", 2: "terça", 4 :"quarta", 6: "quinta", 8: "sexta"}
+    dias = {0: "segunda", 2: "terça", 4: "quarta", 6: "quinta", 8: "sexta"}
 
     ind_lado_dia = int(inf["dia"]) + 2 if inf["horario"] == 7 else int(inf["dia"]) - 2
     hr = 0 if inf["horario"] == 7 else 7
@@ -138,8 +138,6 @@ def aula_noite_outro_dia_manha(data, alertas):
         alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
                           f"aula na noite de {dia_lado} e de manhã na {dia}\n")
     
-    
-
 
 def aula_msm_horario(inf, ano, data, erros):
     smt = data["semestre"]

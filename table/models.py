@@ -1,4 +1,3 @@
-from MySQLdb import IntegrityError
 from django.db import models
 
 
