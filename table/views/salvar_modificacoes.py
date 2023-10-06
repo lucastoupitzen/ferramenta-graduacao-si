@@ -2,27 +2,42 @@ from table.models import *
 from django.db.models import Q
 
 
-def update_prof(inf, year):
-    turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),  CodTurma=str(inf["cod_turma"]))
+def update_prof(inf, year, smt):
+    smt_ano = "I" if smt % 2 else "P"
+    turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
+                                 CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano)
     prof = Professor.objects.get(Apelido=inf["professor"])
     turma_db.NroUSP = prof
     turma_db.save()
+    return turma_db
 
 
-def update_cod(inf, year, erros):
-    turma_obj = cadastrar_turma(inf, year)
-    atualizar_dia(turma_obj, inf, year, erros)
+def update_cod(data, year, erros, smt, ind_modif):
+    inf = data["info"]
+    deletar_valor(data, year, erros)
+    turma_obj = cadastrar_turma(inf, year, smt)
+    update_prof(inf, year, data["semestre"])
+    atualizar_dia(turma_obj, inf, year, erros, smt, ind_modif)
 
 
-def deletar_valor(infos_user, year, erros):
+def deletar_valor(data, year, erros):
     # Iterar sobre as turmas do banco de dados e excluir aquelas que não estão em tbl_user
+    infos_user = data["info"]
+    smt_ano = "I" if data["semestre"] % 2 else "P"
+
+    codisc = ""
+    if infos_user["tipo"] == "u":
+        codisc = infos_user["ant_cod"].split()[0]
+    else:
+        codisc = infos_user["cod_disc"]
+
     try:
         dia = Dia.objects.get(DiaSemana=int(infos_user["dia"]), Horario=int(infos_user["horario"]))
-        obj_turma  = dia.Turmas.get(Ano=year, CoDisc=str(infos_user["cod_disc"]), \
-                                    CodTurma=str(infos_user["cod_turma"]))
+        obj_turma = dia.Turmas.get(Ano=year, CoDisc=codisc,
+                                   CodTurma=str(infos_user["cod_turma"]), SemestreAno=smt_ano)
         num_days_turma = obj_turma.dia_set.all()
         
-        if(len(num_days_turma) > 1):
+        if len(num_days_turma) > 1:
             obj_turma.dia_set.remove(dia)
         else:
             obj_turma.delete()
@@ -31,17 +46,19 @@ def deletar_valor(infos_user, year, erros):
         erros["delecao"] = "Erro ao deletar par de células\n"
 
 
-def cadastrar_turma(turma, ano):
+def cadastrar_turma(turma, ano, smt):
     extra = "N"
     if turma["horario"] in (2, 4):
         extra = "S"
 
+    smt_ano = "I" if smt % 2 else "P"
     nova_turma = Turma(
         CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
         CodTurma=turma["cod_turma"],
         Ano=ano,
         NroUSP=Professor.objects.get(Apelido=turma["professor"]),
         Eextra=extra,
+        SemestreAno=smt_ano
     )
     try:
         nova_turma.save()
@@ -56,13 +73,17 @@ def cadastrar_dia(turma_db, turma_user):
     dia_materia.Turmas.add(turma_db)
 
 
-def atualizar_dia(turma_db, turma, year, erros):
+def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
+    smt_ano = "I" if smt % 2 else "P"
+
     if not turma_db:
-        turma_db = Turma.objects.get(Ano=year, CoDisc=str(turma["cod_disc"]), \
-                                     CodTurma=str(turma["cod_turma"]))
+        turma_db = Turma.objects.get(Ano=year, CoDisc=str(turma["cod_disc"]),
+                                     CodTurma=str(turma["cod_turma"]), SemestreAno=smt_ano)
     
     dia = Dia.objects.filter(DiaSemana=int(turma["dia"]), Horario=int(turma["horario"]))
-    
+
+    indice_tbl_update(turma_db, ind_modif, turma)
+
     if extrapola_creditos(turma_db):
         erros["credito"] = f"Matéria {turma['cod_disc']} e código de turma {turma['cod_turma']} extrapola o número de créditos-aula\n"
         return False
@@ -73,13 +94,12 @@ def atualizar_dia(turma_db, turma, year, erros):
         cadastrar_dia(turma_db, turma)
     
 
-
 def extrapola_creditos(turma_db):
     creditos_disc = turma_db.CoDisc.CreditosAula
     num_hrs = turma_db.dia_set.all().count()
    
     if (creditos_disc == 4 and num_hrs == 2) or \
-    (creditos_disc == 2 and num_hrs == 1):
+       (creditos_disc == 2 and num_hrs == 1):
         return True
    
 
@@ -91,11 +111,11 @@ def aula_manha_noite(data, alertas):
     # lista das linhas que representam a manhã e noite
     if inf["horario"] not in [0,1,5,7]: return False
     
-    horario = (0,1) if inf["horario"] in [5,7] else (5,7)
+    horario = (0, 1) if inf["horario"] in [5,7] else (5,7)
     
-    manha_noite = Dia.objects.filter(DiaSemana=inf["dia"], Horario__in=horario,\
-                             Turmas__NroUSP__Apelido=inf["professor"], \
-                              Turmas__CoDisc__SemestreIdeal=data["semestre"])
+    manha_noite = Dia.objects.filter(DiaSemana=inf["dia"], Horario__in=horario,
+                                     Turmas__NroUSP__Apelido=inf["professor"],
+                                     Turmas__CoDisc__SemestreIdeal=data["semestre"])
     if manha_noite:
         dia = manha_noite.first().get_DiaSemana_display().lower()
         alertas["aula_manha_noite"] = (f"Professor(a) {inf['professor']} vai "
@@ -122,9 +142,9 @@ def aula_noite_outro_dia_manha(data, alertas):
     ind_lado_dia = int(inf["dia"]) + 2 if inf["horario"] == 7 else int(inf["dia"]) - 2
     hr = 0 if inf["horario"] == 7 else 7
     
-    dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,\
-                             Turmas__NroUSP__Apelido=inf["professor"], \
-                              Turmas__CoDisc__SemestreIdeal=data["semestre"])
+    dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,
+                                    Turmas__NroUSP__Apelido=inf["professor"],
+                                    Turmas__CoDisc__SemestreIdeal=data["semestre"])
     
     if dia_alerta:
         dia = dia_alerta.first().get_DiaSemana_display().lower()
@@ -167,4 +187,24 @@ def aula_msm_horario(inf, ano, data, erros):
         return True
 
 
+def indice_tbl_update(turma_obj, ind_modif, info_par):
+    dias_turma = turma_obj.dia_set.exclude(DiaSemana=info_par["dia"],
+                                           Horario=info_par["horario"])
+    for dia in dias_turma:
+        row = dia.Horario
+        if row in (0, 1):
+            row = row + 1
+        elif row == 2:
+            row = 4
+        elif row == 4:
+            row = 6
+        elif row == 5:
+            row = 8 if turma_obj.CodTurma == 4 else 9
+        elif row == 7:
+            row = 10 if turma_obj.CodTurma == 4 else 11
 
+        ind_modif.append({
+            "row": row,
+            "col": int(dia.DiaSemana),
+            "new_value": turma_obj.NroUSP.Apelido
+        })

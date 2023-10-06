@@ -26,6 +26,7 @@ const save_edition = {
         const lastCellContent = row != 5 ? $(rowCells[rowCells.length - 1]).text() : 33;
         
         //No models a linha da tabela corresponde a um horário
+    
         if (row === 1 || row === 2) {
             row--; // 10:15 - 12:00h
         } else if (row === 4 || row === 5) {
@@ -69,9 +70,18 @@ const save_edition = {
             success: (data) => {
                 const erros = data["erros"]
                 const alertas = data["alertas"]
+                const cells_prof_modif = data["cells_modif"]
                 const cred_err = erros.hasOwnProperty("credito")
                 const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
                 
+                console.log(cells_prof_modif)
+                cells_prof_modif.forEach(element => {
+                    const new_row = element["row"];
+                    const new_col = element["col"] + 1;
+                    let celula = $('#tbl1 tr:eq(' + new_row + ') td:eq(' + new_col + ')');
+                    $(celula).html(element["new_value"])
+                });
+
                 if(prof_hr_err){
                     const cell = $(cell_cod).next();
                     col++;

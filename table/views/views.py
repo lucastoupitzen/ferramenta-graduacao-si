@@ -21,8 +21,11 @@ def index(request, semestre="2"):
     tbl_vls.insert(3, ["", ""])
     ano = datetime.now().year
 
+    query_smt = [7, 8] if semestre in [7, 8] else [semestre]
+    smt_ano = "I" if semestre % 2 else "P"
     vls_turmas = Turma.objects.filter(
-        Q(CoDisc__SemestreIdeal=semestre, Ano=ano) | Q(Ano=ano, Eextra="S")
+        Q(CoDisc__SemestreIdeal__in=query_smt, Ano=ano, SemestreAno=smt_ano) |
+        Q(Ano=ano, Eextra="S", SemestreAno=smt_ano)
     )
     for tur_materia in vls_turmas:
         cod_disc = tur_materia.CoDisc
@@ -76,9 +79,7 @@ def index(request, semestre="2"):
     restricoes_profs = {}
     impedimentos_totais = {}
 
-    # Decide quais restrição serão carregadas
-    # Tem um erro de modelagem que precisa ser consertado,
-    # as restrições de horário são só de primeiro semestre ou de segundo
+    # Decide quais restrições serão carregadas
     s_rest = "1" if semestre % 2 else "2"
 
     auto_profs = {}  # para o autocomplete do nome do professor com apelido
@@ -223,9 +224,10 @@ def save_modify(request):
 
     erros = {}
     alertas = {}
+    ind_modif = []
 
     if info_par["tipo"] == "d":
-        deletar_valor(info_par, ano, erros)
+        deletar_valor(data, ano, erros)
 
     elif info_par["tipo"] == "i":
 
@@ -233,8 +235,9 @@ def save_modify(request):
         aula_noite_outro_dia_manha(data, alertas)
 
         if not aula_msm_horario(info_par, ano, data, erros):
-            turma_obj = cadastrar_turma(info_par, ano)
-            atualizar_dia(turma_obj, info_par, ano, erros)
+            turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
+            update_prof(info_par, ano, data["semestre"])
+            atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
 
     elif info_par["tipo"] == "u":
 
@@ -243,12 +246,13 @@ def save_modify(request):
             aula_noite_outro_dia_manha(data, alertas)
 
             if not aula_msm_horario(info_par, ano, data, erros):
-                update_prof(info_par, ano)
+                turma_obj = update_prof(info_par, ano, data["semestre"])
+                indice_tbl_update(turma_obj, ind_modif, info_par)
 
         elif "ant_cod" in info_par:
-            update_cod(info_par, ano, erros)
+            update_cod(data, ano, erros, data["semestre"], ind_modif)
 
-    return JsonResponse({'erros': erros, 'alertas': alertas})
+    return JsonResponse({'erros': erros, 'alertas': alertas, 'cells_modif': ind_modif})
 
 
 def download_zip_planilhas(request):

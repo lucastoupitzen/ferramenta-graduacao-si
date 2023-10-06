@@ -296,7 +296,8 @@ const editable = {
                     let results;
                     //linhas entre [4,6] são do vespertino
                     if (row >= 4 && row <= 6) {
-                        results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext)), request.term);
+                        const temp_cods = Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext));
+                        results = $.ui.autocomplete.filter(temp_cods, request.term);
                         
                     } else {
                         results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
@@ -410,17 +411,17 @@ const editable = {
             //Exceção das duas células da segunda linha do vespertino 1
             //A próxima coluna e a anterior podem ser indefinidas
             const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
-            const parImcompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
+            const parIncompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
 
             // (C4) Se a célula ao lado estiver vazia ela fica editável
             //o indice 0 tem o elemento DOM da célula
             if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1);
-            if(parImcompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
+            if(parIncompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
 
             //(C5) Se o par de células estiver completo chama o save_edition
             let vl = {};
             if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
-            || (!colCod && !parImcompletoEsquerda && valueUser !== ""))){
+            || (!colCod && !parIncompletoEsquerda && valueUser !== ""))){
                 //"i/u" == insert/update
                 if(editable.previousValue !== ""){
                     //update

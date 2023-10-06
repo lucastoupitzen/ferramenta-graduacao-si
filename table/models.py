@@ -69,9 +69,10 @@ class Turma(models.Model):
     NroUSP = models.ForeignKey(Professor, on_delete=models.CASCADE)
     NroAlunos = models.IntegerField(null=True, blank=True)
     Eextra = models.CharField(max_length=1, choices=[("S", "Sim"), ("N", "Não")])
+    SemestreAno = models.CharField(default="P", max_length=1, choices=[("P", "par"), ("I", "impar")])
 
     class Meta:
-        unique_together = (("Ano", "CodTurma", "CoDisc"),)
+        unique_together = (("Ano", "CodTurma", "CoDisc", "SemestreAno"),)
 
     def __str__(self):
         return "0" + str(self.CodTurma) + "/" + str(self.CoDisc)
