@@ -11,7 +11,6 @@ const save_edition = {
             col--;
         }
         
-
         const cods_auto =  $.extend(cods_auto_ext, cods_auto_obrig);
         const vUsercod  = type === "d" ? vl["cod"] : $(cell).html().trim();
         const vUserProf =  type === "d" ? vl["pf"]: $(cell).next().html().trim();
@@ -21,22 +20,25 @@ const save_edition = {
         const rowCells = $(cell).closest("tr").find("td");
 
         // Obtém o conteúdo da última célula da linha
-        // 33 é um número de turma arbitrário para linha 5
-        // Assim como o 3 para as turmas do vespertinho
-        const lastCellContent = row != 5 ? $(rowCells[rowCells.length - 1]).text() : 33;
+        let lastCellContent = $(rowCells[rowCells.length - 1]).text();
         
-        //No models a linha da tabela corresponde a um horário
-    
-        if (row === 1 || row === 2) {
-            row--; // 10:15 - 12:00h
-        } else if (row === 4 || row === 5) {
-            row = 2; //14:00 - 15:45h
-        } else if (row === 6) {
-            row = 4; //16:15-18:00h
-        } else if (row === 8 || row === 9) {
-            row = 5; //19:00 - 20:45h
-        } else if (row === 10 || row === 11) {
-            row = 7; //21:00 - 22:45h
+        //No models a linha da tabela corresponde a um horário  
+        if (row === 1 || row === 2) row--; // 10:15 - 12:00h e 8:00 - 10:15
+        
+        if(vl["extra"]){
+            if(row == 4) row = 5
+            else if(row == 5) row = 7
+
+        }else{
+            if(row === 5) lastCellContent = 33;
+
+            if (row === 4 || row === 5) row = 2; //14:00 - 15:45h
+            else if (row === 6) row = 4; //16:15-18:00h
+            else if (row === 8 || row === 9) row = 5; //19:00 - 20:45h
+            else if (row === 10 || row === 11) row = 7; //21:00 - 22:45h
+            
+            
+
         }
         
         let infosParCell = {
@@ -45,10 +47,12 @@ const save_edition = {
             "horario": row,
             "dia": dia,
             "cod_turma": lastCellContent,
-            "tipo": type
+            "tipo": type,
+            "extra": vl["extra"]
         }
         
         if(type === "u") infosParCell = $.extend(infosParCell, vl);
+        console.log(infosParCell)
         save_edition.requisicao(infosParCell, cell, row, col);
     },
     requisicao: (content, cell_cod, row, col) => {
@@ -73,13 +77,15 @@ const save_edition = {
                 const cells_prof_modif = data["cells_modif"]
                 const cred_err = erros.hasOwnProperty("credito")
                 const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
-                
                 console.log(cells_prof_modif)
                 cells_prof_modif.forEach(element => {
-                    const new_row = element["row"];
-                    const new_col = element["col"] + 1;
-                    let celula = $('#tbl1 tr:eq(' + new_row + ') td:eq(' + new_col + ')');
-                    $(celula).html(element["new_value"])
+                    let new_row = element["row"];
+                    let new_col = element["col"] + 1;
+                    let celula;
+                    if(content["extra"]) celula = $('#tbl_ext tr:eq(' + new_row + ') td:eq(' + new_col + ')');
+                    else celula = $('#tbl1 tr:eq(' + new_row + ') td:eq(' + new_col + ')');
+                    
+                    $(celula).html(element["new_value"]);
                 });
 
                 if(prof_hr_err){
@@ -93,7 +99,7 @@ const save_edition = {
                     }
                     openModal("ERRO", erros["prof_msm_hr"]);
                     $('#myModal').on('hidden.bs.modal', function () {
-                        editable.edit(cell.get(0), row, col);
+                        editable.edit(cell.get(0), row, col, content["extra"]);
                         return;
                     });
                     
@@ -107,7 +113,7 @@ const save_edition = {
 
                     openModal("ERRO", erros["credito"]);
                     $('#myModal').on('hidden.bs.modal', function () {
-                        editable.edit(cell_cod, row, col);
+                        editable.edit(cell_cod, row, col, content["extra"]);
                         return;
                     });       
                 }else if(Object.keys(alertas).length !== 0){

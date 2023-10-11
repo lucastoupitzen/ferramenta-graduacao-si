@@ -48,7 +48,7 @@ def deletar_valor(data, year, erros):
 
 def cadastrar_turma(turma, ano, smt):
     extra = "N"
-    if turma["horario"] in (2, 4):
+    if turma["horario"] in (2, 4) or turma["extra"]:
         extra = "S"
 
     smt_ano = "I" if smt % 2 else "P"
@@ -192,19 +192,27 @@ def indice_tbl_update(turma_obj, ind_modif, info_par):
                                            Horario=info_par["horario"])
     for dia in dias_turma:
         row = dia.Horario
+        n_row = row
         if row in (0, 1):
-            row = row + 1
-        elif row == 2:
-            row = 4
-        elif row == 4:
-            row = 6
-        elif row == 5:
-            row = 8 if turma_obj.CodTurma == 4 else 9
-        elif row == 7:
-            row = 10 if turma_obj.CodTurma == 4 else 11
+            n_row += 1
+
+        if info_par["extra"]:
+            if row == 5:
+                n_row = 4
+            elif row == 7:
+                n_row = 5
+        else:
+            if row == 2:
+                n_row = 4
+            elif row == 4:
+                n_row = 6
+            elif row == 5:
+                n_row = 8 if turma_obj.CodTurma == 4 else 9
+            elif row == 7:
+                n_row = 10 if turma_obj.CodTurma == 4 else 11
 
         ind_modif.append({
-            "row": row,
+            "row": n_row,
             "col": int(dia.DiaSemana),
             "new_value": turma_obj.NroUSP.Apelido
         })

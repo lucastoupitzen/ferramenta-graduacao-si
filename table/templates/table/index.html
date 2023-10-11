@@ -59,14 +59,20 @@
             border-radius: 4px;
             padding: 8px;
             font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rborder-color:gba(0, 0, 0, 0.1);
         }
         .custom-border td {
             border-color: #C0C0C0;
             border-width: 3px; 
         }
-          
-
+        #tbl_ext{
+            font-style: italic;
+            font-family: 'Times New Roman', serif;
+        }
+        #tbl_ext td {
+            border-color: #C0C0C0;
+            border-width: 1px; 
+        }
     </style>
 </head>
 
@@ -79,6 +85,7 @@
             <li>o sistema salva quando o par disciplina/professor estiver completo</li>
             <li>Ao apagar um docente o sistema deleta a disciplina associada a ele e vice-versa</li>
             <li>Para fazer o update selecione uma célula já preenchida e troque o dado</li>
+            <li>A turmas extras são divididas por semestre do ano(par/ímpar), ou seja, há duas tabelas para o ano</li>
         </ol>
         <!-- Modal -->
         <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -97,7 +104,78 @@
             </div>
         </div>
         <div id="url-data" data-url="{% url 'save_modify' %}"></div>
+
+        <h4>Tabela para inserção de turmas extras</h4>
+        <table class="table table-bordered editable" id="tbl_ext">
+            <thead>
+                <tr class="table-secondary">
+                    <th scope="col"></th>
+                    <th scope="col">Seg</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Ter</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qua</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qui</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Sex</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Turma</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Matutino 1 8:00-09:45h</th>
+                    {%for i in tbl_extra.0%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td rowspan="2" class="align-middle text-center">02</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Matutino 2 10:15-12:00h</th>
+                    {%for i in tbl_extra.1%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td style="display:none;">02</td>
+                </tr>
+                <th colspan="12" class="table-secondary p-4"></th>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Noturno 1 19:00 - 20:45h</th>
+                    {%for i in tbl_extra.2%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td rowspan="2" class="align-middle text-center">04</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Noturno 2 21:00 - 22:45h</th>
+                    {%for i in tbl_extra.3%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td style="display:none;">04</td>
+                </tr>
+            </tbody>
+        </table>
         
+
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h6 class="mb-3">Código da matéria (turma extra)</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" id="mtr" class="form-control autocomplete" placeholder="Digite o nome da matéria de outro semestre de curso">
+                        <div class="input-group-append">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-2" id="cod" style="display:none">Código da matéria: <span></span></p>
+                </div>
+            </div>
+        </div>
+        
+        <hr>
+        
+
+        <h4>Tabela para inserção de obrigatórias + extras vespertino</h4>
         <table class="table table-bordered font-weight-bold editable" id="tbl1">
             <thead>
                 <tr class="table-secondary">
@@ -119,21 +197,16 @@
                 <tr>
                     <th scope="row" class="align-middle text-center" >Matutino 1 8:00-09:45h</th>
                     {%for i in tProfs.0 %}
-                    {%if forloop.counter0 < 10%}
                     <td class="align-middle text-center">{{i}}</td>
-                    {%endif%}
                     {%endfor%}
-                    <td rowspan="2" class="align-middle text-center">{{tProfs.0.10}}</td>
-                    
+                    <td rowspan="2" class="align-middle text-center">02</td>
                 </tr>
                 <tr>
                     <th scope="row" class="align-middle text-center">Matutino 2 10:15-12:00h</th>
                     {%for i in tProfs.1%}
-                    {%if forloop.counter0 < 10%}
                     <td class="align-middle text-center">{{i}}</td>
-                    {%endif%}
                     {%endfor%}
-                    <td style="display:none;">{{tProfs.0.10}}</td>
+                    <td style="display:none;">02</td>
                 </tr>
                 <th colspan="12" class="table-secondary p-4"></th>
                 <tr>
@@ -164,25 +237,31 @@
                     {%for i in tProfs.5%}
                     <td class="align-middle text-center">{{i}}</td>
                     {%endfor%}
+                    <td class="align-middle text-center">04</td>
                 </tr>
                 <tr class="custom-border">
                     {%for i in tProfs.6%}
                     <td class="align-middle text-center ">{{i}}</td>
                     {%endfor%}
+                    <td class="align-middle text-center">94</td>
                 </tr>
                 <tr>
                     <th scope="row" rowspan="2" class="align-middle text-center">Noturno 2 21:00 - 22:45h</th>
                     {%for i in tProfs.7%}
                     <td class="align-middle text-center">{{i}}</td>
                     {%endfor%}
+                    <td class="align-middle text-center">04</td>
                 </tr>
                 <tr class="custom-border">
                     {%for i in tProfs.8%}
                     <td class="align-middle text-center">{{i}}</td>
                     {%endfor%}
+                    <td class="align-middle text-center">94</td>
                 </tr>
             </tbody>
         </table>
+
+  
         
         {% if not semestre == 7 and not semestre == 8%}
         <div class="container mt-3">
@@ -212,16 +291,6 @@
         
         <div class="container">
             <div class="row">
-                <div class="col-sm-6">
-                    <h6 class="mb-3">Código da matéria (turma extra)</h6>
-                    <div class="input-group mb-3">
-                        <input type="text" id="mtr" class="form-control autocomplete" placeholder="Digite o nome da matéria">
-                        <div class="input-group-append">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        </div>
-                    </div>
-                    <p class="text-muted mt-2" id="cod" style="display:none">Código da matéria: <span></span></p>
-                </div>
                 <div class="col-sm-6">
                     <h6 class="mb-3">Detalhes do Professor</h6>
                     <div class="input-group mb-3">

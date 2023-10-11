@@ -121,21 +121,25 @@ $(document).ready(function () {
         const rest_prof = restricos_hro[cellName]
         const impedimentos = impedimentos_totais[cellName]
         indexes_rest.push(...rest_prof);
-        indexes_imped.push(...impedimentos);
+        indexes_imped.push(...impedimentos); 
         indexes.push(indexes_rest)
         indexes.push(indexes_imped)
         return indexes;
     }
 
-    $('#tbl1 td').hover(function () {
+    $('.editable td').hover(function () {
         if (!markCells) {
             const cell = $(this);
             const cellText = cell.text().trim();
             const isEditable = cell.is('[contenteditable="true"]');
             let colIndex = cell[0].cellIndex;
             const rowIndex = cell.closest('tr')[0].rowIndex;
-            const specialRows = [5, 9, 11];
-            if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
+            const table = $(this).closest('table'); 
+            const id = table.attr('id'); 
+            if(id === "tbl1"){
+                const specialRows = [5, 9, 11];
+                if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
+            }
             
             if (colIndex % 2 === 0 && cellText !== "" && !isEditable) {
                 cell.find('i.fa').remove();
@@ -148,11 +152,32 @@ $(document).ready(function () {
         }
     });
 
+    function adaptaParaExt(listaOriginal) {
+        let novaLista = [];
+
+        for (let i = 0; i < listaOriginal.length; i++) {
+            let valor = listaOriginal[i];
+    
+            if (valor >= 0 && valor <= 21) {
+                novaLista.push(valor);
+            }else if (valor >= 46 && valor <= 56) {
+
+                const novoValor = valor - 24;
+                novaLista.push(novoValor);
+                const valorFinal = novoValor + 11;
+                novaLista.push(valorFinal);
+            }
+        }
+    
+        return novaLista;
+    }    
+
     //Mostra a restrições quando o ícone é clicado
-    $(document).on('click', '#tbl1 td i', function (e) {
+    $(document).on('click', '.editable td i', function (e) {
         const icon = $(this);                
         markCells = !markCells;
-
+        const table = $(this).closest('table'); 
+        const id = table.attr('id'); 
         $('#checkRestricaoHro').prop('checked', false);
         
         if (markCells) {
@@ -162,9 +187,13 @@ $(document).ready(function () {
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
             const cellContent = icon.parent().text().trim();
-            const indexes = getCellIndexes(cellContent)[0];
-            const indexes_imp = getCellIndexes(cellContent)[1]
+            let indexes = getCellIndexes(cellContent)[0];
+            let indexes_imp = getCellIndexes(cellContent)[1]
             
+            if(id === "tbl_ext"){
+                indexes = adaptaParaExt(indexes)
+                indexes_imp = adaptaParaExt(indexes_imp)
+            }
             if (indexes.length > 0) {
                 indexes.forEach(function (index) {
                     cells.eq(index).addClass('red-transparent');
@@ -218,16 +247,23 @@ $(document).ready(function () {
         const target = event.target; // O elemento alvo do clique dentro da célula
         let colIndex = cell.cellIndex;
         const rowIndex = cell.parentNode.rowIndex;
-        const specialRows = [5, 9, 11];
-        if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
-                
+        let is_ext = true;
+        const table = $(this).closest('table'); 
+        const id = table.attr('id'); 
+        if(id === "tbl1"){
+            is_ext = false;
+            const specialRows = [5, 9, 11];
+            if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
+        }
+                   
         //coluna das turmas não deve ser editável
         if(colIndex == 11) return
         
         // Verifica se o alvo do clique é o ícone
-        if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex);
+        if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex, is_ext);
         
     }
+
 });
 
 //Manipula o processo de edição das células
@@ -237,13 +273,14 @@ const editable = {
     colIndex: 0,
     selected : null, // current selected cell
     previousValue : "",
+    is_ext : false,
 
     // (B) "CONVERT" TO EDITABLE CELL
-    edit: (cell, row, col) => {
-        
+    edit: (cell, row, col, ext) => {
+        editable.is_ext = ext;
         $('#checkRestricaoHro').prop('checked', false);
         // Remove ícone presente na célula
-        $('#tbl1').find('i').remove();
+        $(cell).closest('table').find('i').remove();
         
         // Remove a classe 'red-transparent' das células marcadas
         if(transparent){
@@ -258,7 +295,6 @@ const editable = {
             $(cell).closest('table').find('td.red-impedimento').removeClass('red-impedimento');
             impedimento = false;
         }
-
 
         editable.previousValue = $(cell).html().replace(/&nbsp;/g, '').trim();
         editable.rowIndex = row;
@@ -295,7 +331,7 @@ const editable = {
                 source: function(request, response) {
                     let results;
                     //linhas entre [4,6] são do vespertino
-                    if (row >= 4 && row <= 6) {
+                    if ((row >= 4 && row <= 6) || editable.is_ext) {
                         const temp_cods = Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext));
                         results = $.ui.autocomplete.filter(temp_cods, request.term);
                         
@@ -358,13 +394,14 @@ const editable = {
     // (C) END "EDIT MODE"
     close: evt => {
         if (evt.target !== editable.selected) {
+            console.log(editable.is_ext)
             const valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
             const col = editable.colIndex;
             const row = editable.rowIndex;
             
             
             // tira ícones que podem estar nas células posterior e anterior
-            $('#tbl1').find("i").remove();
+            $(editable.selected).find("i").remove();
 
             const nextCell = $(editable.selected).next();
             const prevCell = $(editable.selected).prev();
@@ -378,11 +415,12 @@ const editable = {
                 let ExistMtr = false;
                 if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
 
-                if(row >= 4 && row <= 6 && cods_auto_ext.hasOwnProperty(valueUser))  ExistMtr = true; 
+                const mtr_ext_valida = cods_auto_ext.hasOwnProperty(valueUser)
+                if((row >= 4 && row <= 6 && mtr_ext_valida) | (mtr_ext_valida && editable.is_ext))  ExistMtr = true; 
                 
                 if (!ExistMtr) {
-                    const mgs_err = "Código de Matéria inválido, consulte o desejado na tabela abaixo";
-                    erro_entrada(mgs_err, colCod, valueUser, valueNextCell, valuePrevCell)
+                    const msg_erro = "Código de Matéria inválido, consulte o desejado na tabela abaixo";
+                    erro_entrada(msg_erro, colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext)
                    
                 }else{
                     validInput = true;
@@ -398,8 +436,7 @@ const editable = {
                 if (nomeEncontrado) ExistProf = true 
                 
                 if(!ExistProf){
-                    const mgs_err = "Nome do professor inválido";
-                    erro_entrada(msg_err, colCod, valueUser, valueNextCell, valuePrevCell);
+                    erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
                 }else{
                     validInput = true;
                 }
@@ -415,11 +452,14 @@ const editable = {
 
             // (C4) Se a célula ao lado estiver vazia ela fica editável
             //o indice 0 tem o elemento DOM da célula
-            if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1);
-            if(parIncompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1);
+            if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1, editable.is_ext);
+            if(parIncompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1, editable.is_ext);
 
             //(C5) Se o par de células estiver completo chama o save_edition
-            let vl = {};
+            
+            let vl = { "extra": false };
+            if(editable.is_ext) vl["extra"] = true;
+
             if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
             || (!colCod && !parIncompletoEsquerda && valueUser !== ""))){
                 //"i/u" == insert/update
@@ -456,14 +496,14 @@ const editable = {
     }
 };
 
-function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell){
+function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell, ext){
     openModal("ERRO", msg);
     $('#myModal').on('hidden.bs.modal', () => {
         if (editable.previousValue !== "") $(editable.selected).html(editable.previousValue);
         else $(editable.selected).html("");
         editable.removeEditable(editable.selected, isCod, v_User, v_nextCell, v_PrevCell);
         // Foca novamente na célula se a entrada for inválida
-        editable.edit(editable.selected, editable.rowIndex, editable.colIndex);
+        editable.edit(editable.selected, editable.rowIndex, editable.colIndex, ext);
         return;
     }); 
 }

@@ -7,7 +7,6 @@ from openpyxl.reader.excel import load_workbook
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 import unicodedata
 
-
 from .planilha_distribuicao import *
 from .planilha_docentes import *
 from .salvar_modificacoes import *
@@ -17,9 +16,11 @@ from .preferencias_upload import *
 def index(request, semestre="2"):
     # cria listas com referências diferentes
     # elas serão iteradas no index.html para carregar os dados na planilha editável
-    tbl_vls = [[""] * 11 for _ in range(8)]
+    tbl_vls = [[""] * 10 for _ in range(8)]
     tbl_vls.insert(3, ["", ""])
     ano = datetime.now().year
+
+    tbl_extra = [[""] * 10 for _ in range(4)]
 
     query_smt = [7, 8] if semestre in [7, 8] else [semestre]
     smt_ano = "I" if semestre % 2 else "P"
@@ -27,10 +28,12 @@ def index(request, semestre="2"):
         Q(CoDisc__SemestreIdeal__in=query_smt, Ano=ano, SemestreAno=smt_ano) |
         Q(Ano=ano, Eextra="S", SemestreAno=smt_ano)
     )
+
     for tur_materia in vls_turmas:
         cod_disc = tur_materia.CoDisc
         prof = tur_materia.NroUSP.Apelido
         t_nro = int(tur_materia.CodTurma)
+        t_extra = tur_materia.Eextra
 
         # faz a uma consulta na relação N:N
         dias_aulas = tur_materia.dia_set.all()
@@ -48,30 +51,14 @@ def index(request, semestre="2"):
             if t_nro == 33:
                 row_tbl += 1
 
-            tbl_vls[row_tbl][
-                col_tbl
-            ] = f"{str(cod_disc.CoDisc)} {str(cod_disc.Abreviacao)}"
-            tbl_vls[row_tbl][col_tbl + 1] = prof
-
-            if tur_materia.Eextra == "N":
-                tbl_vls[row_tbl][10] = t_nro
-
-    # Usando os números de turma predefinidos caso esteja vazio(otimizar)
-    # Isso vai funcionar somente para SI
-    for row, vls in enumerate(tbl_vls):
-        if row in (2, 4, 3):
-            continue
-
-        cell_turma = vls[10]
-        if cell_turma != "":
-            continue
-
-        if row in (0, 1):
-            tbl_vls[row][10] = 2
-        elif row in (5, 7):
-            tbl_vls[row][10] = 4
-        else:
-            tbl_vls[row][10] = 94
+            if t_extra == "S" and row_tbl not in (2, 3, 4):
+                if row_tbl == 5:
+                    row_tbl = 2
+                elif row_tbl == 7:
+                    row_tbl = 3
+                atribuir_tbl_values(tbl_extra, cod_disc, row_tbl, col_tbl, prof)
+            else:
+                atribuir_tbl_values(tbl_vls, cod_disc, row_tbl, col_tbl, prof)
 
     rest_turno = {"manha": 0, "tarde": 22, "noite": 48}
     dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
@@ -102,10 +89,11 @@ def index(request, semestre="2"):
             list_rest_indice = []
             indice = dia_sem[rest_prof.dia] + rest_turno[rest_prof.periodo]
             if rest_prof.periodo == "tarde" and rest_prof.dia == "segunda":
-                list_rest_indice = [indice, 23, 34, 35, 36, 37]
+                list_rest_indice = [indice, 23, 33, 34, 35, 36]
             elif rest_prof.periodo == "tarde":
-                list_rest_indice = [indice, indice + 1, indice + 14, indice + 15]
+                list_rest_indice = [indice, indice + 1, indice + 13, indice + 14]
             elif rest_prof.periodo == "noite":
+                indice = indice - 2
                 list_rest_indice = [
                     indice,
                     indice + 1,
@@ -142,7 +130,6 @@ def index(request, semestre="2"):
         else:
             cods_tbl_hr_ext[f"{disc.CoDisc} {disc.Abreviacao}"] = disc.CoDisc
             mtr_auto_nome[disc.NomeDisc] = f"{disc.CoDisc} {disc.Abreviacao}"
-
 
     # Serve para listar as disciplinas na página
     if semestre in [7, 8]:
@@ -194,8 +181,16 @@ def index(request, semestre="2"):
         "mtr_auto_nome": mtr_auto_nome,
         "tables_info": tables_info,
         "impedimentos_totais": impedimentos_totais,
+        "tbl_extra": tbl_extra
     }
     return render(request, "table/index.html", context)
+
+
+def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
+    tbl[row][
+        col
+    ] = f"{str(cod_disc.CoDisc)} {str(cod_disc.Abreviacao)}"
+    tbl[row][col + 1] = prof
 
 
 def menu(request):
