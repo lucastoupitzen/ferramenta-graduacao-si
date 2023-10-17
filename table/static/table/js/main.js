@@ -13,6 +13,7 @@ const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_tot
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
+import { popUp } from "./modules/popUp.js"
 // exportando para o crud_turmas
 export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable}; 
 
@@ -63,9 +64,9 @@ $(document).ready(function () {
 
     $(function() {
         coresRestrições();
+        popUp.controla_popup();
     })
 
-      
     //Lida com os detalhes do professor
     $(function() {
         $("#prof").autocomplete({
@@ -166,6 +167,8 @@ $(document).ready(function () {
     
         return novaLista;
     }    
+
+    $(document).on('click', '#showPopup', controla_popup() )
 
     //Mostra a restrições quando o ícone é clicado
     $(document).on('click', '.editable td i', function (e) {
@@ -541,3 +544,4 @@ function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell, ext){
         return;
     }); 
 }
+

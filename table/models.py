@@ -102,6 +102,22 @@ class Dia(models.Model):
 
     def __str__(self):
         return f"{self.get_DiaSemana_display()}/{self.get_Horario_display()}"
+    
+class Turmas_RP(models.Model):
+
+    CoDisc = models.ForeignKey(Disciplina, on_delete=models.CASCADE, choices=[("ACH0041", "RP1"), ("ACH0042", "RP2")])
+    CodTurma = models.DecimalField(max_digits=2, decimal_places=0, default=0)
+    Ano = models.DecimalField(max_digits=4, decimal_places=0, null=True, blank=True)
+    NroUSP = models.ForeignKey(Professor, on_delete=models.CASCADE)
+    Eextra = models.CharField(max_length=1, choices=[("S", "Sim"), ("N", "Não")])
+    SemestreAno = models.CharField(default="P", max_length=1, choices=[("P", "par"), ("I", "impar")])
+
+    class Meta:
+        unique_together = (("Ano", "CodTurma", "CoDisc", "SemestreAno", "Eextra"),)
+
+    def __str__(self):
+        return "0" + str(self.CodTurma) + "/" + str(self.CoDisc)
+
 
 
 class MtvRestricao(models.Model):
