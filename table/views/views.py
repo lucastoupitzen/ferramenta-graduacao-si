@@ -6,6 +6,7 @@ import json
 from openpyxl.reader.excel import load_workbook
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 import unicodedata
+from django.db.models import Count
 
 from .planilha_distribuicao import *
 from .planilha_docentes import *
@@ -382,3 +383,64 @@ def pref_planilha(request):
             )
 
     return render(request, "table/menu.html")
+
+
+def listar_pendencias(request):
+    if request.method == "POST":
+        ano = 2023
+        alertas = {}
+
+        # Obtém as disciplinas obrigatórias e anota se elas têm turmas associadas ao ano específico
+        disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria").annotate(
+            has_turmas_no_ano=Count('turma', filter=Q(turma__Ano=ano))
+        )
+
+        # Obtém as disciplinas que não têm turmas associadas ao ano específico
+        disciplinas_sem_turmas = disciplinas.filter(has_turmas_no_ano=0)
+
+        # for d in disciplinas_sem_turmas:
+        #     print(d)
+
+        faltando_hrs = {}
+        turmas = Turma.objects.filter(Ano=ano)
+        profs = Professor.objects.all()
+
+        for tur in turmas:
+
+            nome = tur.NroUSP.NomeProf
+            cred = tur.CoDisc.CreditosAula
+
+            if nome not in faltando_hrs:
+                inicializa_prof(faltando_hrs, nome)
+
+            faltando_hrs[nome][tur.SemestreAno] += cred
+
+            hrs = faltando_hrs[nome][tur.SemestreAno]
+            if hrs and hrs >= 8:
+                faltando_hrs[nome][tur.SemestreAno] = False
+
+        for prof in profs:
+            nome = prof.NomeProf
+
+            if nome not in faltando_hrs:
+                inicializa_prof(faltando_hrs, nome)
+            else:
+                falta_par = faltando_hrs[nome]["P"]
+                falta_impar = faltando_hrs[nome]["I"]
+
+                if not(falta_par or falta_impar):
+                    del faltando_hrs[nome]
+
+        # for n in faltando_hrs.keys():
+        #    print(f"{n}: par = {faltando_hrs[n]['P']} // impar = {faltando_hrs[n]['I']}")
+
+        return HttpResponse(alertas)
+    else:
+        return HttpResponse("fail")
+
+
+def inicializa_prof(dicio, nome):
+    dicio[nome] = {
+        "P": 0,
+        "I": 0
+    }

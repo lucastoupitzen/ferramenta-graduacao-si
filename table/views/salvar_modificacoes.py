@@ -4,8 +4,12 @@ from django.db.models import Q
 
 def update_prof(inf, year, smt):
     smt_ano = "I" if smt % 2 else "P"
+    extra = "N"
+    if inf["extra"]:
+        extra = "S"
+
     turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
-                                 CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano)
+                                 CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra)
     prof = Professor.objects.get(Apelido=inf["professor"])
     turma_db.NroUSP = prof
     turma_db.save()
@@ -76,9 +80,13 @@ def cadastrar_dia(turma_db, turma_user):
 def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
     smt_ano = "I" if smt % 2 else "P"
 
+    extra = "N"
+    if turma["extra"]:
+        extra = "S"
+
     if not turma_db:
         turma_db = Turma.objects.get(Ano=year, CoDisc=str(turma["cod_disc"]),
-                                     CodTurma=str(turma["cod_turma"]), SemestreAno=smt_ano)
+                                     CodTurma=str(turma["cod_turma"]), SemestreAno=smt_ano, Eextra=extra)
     
     dia = Dia.objects.filter(DiaSemana=int(turma["dia"]), Horario=int(turma["horario"]))
 

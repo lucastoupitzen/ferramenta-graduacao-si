@@ -12,5 +12,6 @@ urlpatterns = [
     ),
     path("", views.menu, name="menupage"),
     path("redirect", views.redirect, name="redirect"),
-    path("process_file", views.pref_planilha, name="process_file")
+    path("process_file", views.pref_planilha, name="process_file"),
+    path("listar_pendencias", views.listar_pendencias, name="listar_pendencias")
 ]
