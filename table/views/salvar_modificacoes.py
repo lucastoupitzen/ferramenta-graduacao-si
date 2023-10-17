@@ -112,10 +112,21 @@ def aula_manha_noite(data, alertas):
     if inf["horario"] not in [0,1,5,7]: return False
     
     horario = (0, 1) if inf["horario"] in [5,7] else (5,7)
-    
-    manha_noite = Dia.objects.filter(DiaSemana=inf["dia"], Horario__in=horario,
-                                     Turmas__NroUSP__Apelido=inf["professor"],
-                                     Turmas__CoDisc__SemestreIdeal=data["semestre"])
+
+    if data["semestre"] % 2 == 0:
+            semestres_testados = [2,4,6,8]
+    else:
+            semestres_testados = [1,3,5,7]
+        
+    for semestre in semestres_testados:
+
+            manha_noite = Dia.objects.filter(DiaSemana=inf["dia"], Horario__in=horario,
+                                                Turmas__NroUSP__Apelido=inf["professor"],
+                                                Turmas__CoDisc__SemestreIdeal=semestre)
+            
+            if manha_noite: break
+
+
     if manha_noite:
         dia = manha_noite.first().get_DiaSemana_display().lower()
         alertas["aula_manha_noite"] = (f"Professor(a) {inf['professor']} vai "
@@ -141,10 +152,17 @@ def aula_noite_outro_dia_manha(data, alertas):
 
     ind_lado_dia = int(inf["dia"]) + 2 if inf["horario"] == 7 else int(inf["dia"]) - 2
     hr = 0 if inf["horario"] == 7 else 7
+
+    if data["semestre"] % 2 == 0:
+        semestres_testados = [2,4,6,8]
+    else:
+        semestres_testados = [1,3,5,7]
     
-    dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,
+    for semestre in semestres_testados:
+        dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,
                                     Turmas__NroUSP__Apelido=inf["professor"],
-                                    Turmas__CoDisc__SemestreIdeal=data["semestre"])
+                                    Turmas__CoDisc__SemestreIdeal=semestre)
+        if dia_alerta: break
     
     if dia_alerta:
         dia = dia_alerta.first().get_DiaSemana_display().lower()
