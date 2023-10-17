@@ -57,6 +57,11 @@ $(document).ready(function () {
         }
         });
     });
+
+    $(function() {
+        coresRestrições();
+    })
+
       
     //Lida com os detalhes do professor
     $(function() {
@@ -113,19 +118,6 @@ $(document).ready(function () {
         }
     });
 
-    // Função para obter índices de células das restrições de horário de um professor
-    function getCellIndexes(cellName) {
-        const indexes = [];
-        const indexes_rest = [];
-        const indexes_imped = []
-        const rest_prof = restricos_hro[cellName]
-        const impedimentos = impedimentos_totais[cellName]
-        indexes_rest.push(...rest_prof);
-        indexes_imped.push(...impedimentos); 
-        indexes.push(indexes_rest)
-        indexes.push(indexes_imped)
-        return indexes;
-    }
 
     $('.editable td').hover(function () {
         if (!markCells) {
@@ -266,6 +258,40 @@ $(document).ready(function () {
 
 });
 
+ // Função para obter índices de células das restrições de horário de um professor
+ function getCellIndexes(cellName) {
+    const indexes = [];
+    const indexes_rest = [];
+    const indexes_imped = []
+    const rest_prof = restricos_hro[cellName]
+    const impedimentos = impedimentos_totais[cellName]
+    indexes_rest.push(...rest_prof);
+    indexes_imped.push(...impedimentos);
+    indexes.push(indexes_rest)
+    indexes.push(indexes_imped)
+    return indexes;
+}
+
+function coresRestrições() {
+    let cells = $('#tbl1 td');
+    for(let i = 0; i < 90; i++) {
+        let apelido = cells.eq(i)[0].innerText;
+        if(apelido) {
+            Object.keys(dtl_profs).map((professor) => {
+                if(dtl_profs[professor][1] == apelido) {
+                    if(getCellIndexes(apelido)[0].includes(i)) {
+                        cells.eq(i).addClass("prof-na-restricão")
+                    }
+                    if(getCellIndexes(apelido)[1].includes(i)) {
+                        cells.eq(i).addClass("prof-no-impedimento")
+                    }
+                }
+            })
+        }
+    }
+};
+
+
 //Manipula o processo de edição das células
 const editable = {
     icon: null,
@@ -320,6 +346,9 @@ const editable = {
                     const nomeProf = ui.item.value;
                     const apelidoProf = auto_profs[nomeProf];
                     $(cell).html(apelidoProf);
+                    $(cell).removeClass("prof-na-restricão");
+                    $(cell).removeClass("prof-no-impedimento");
+                    coresRestrições();
                     return false;
                 }
             }).focus(function() {
