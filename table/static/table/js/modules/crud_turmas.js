@@ -77,7 +77,7 @@ const save_edition = {
                 const cells_prof_modif = data["cells_modif"]
                 const cred_err = erros.hasOwnProperty("credito")
                 const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
-                console.log(cells_prof_modif)
+                
                 cells_prof_modif.forEach(element => {
                     let new_row = element["row"];
                     let new_col = element["col"] + 1;

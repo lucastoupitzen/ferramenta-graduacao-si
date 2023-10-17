@@ -363,7 +363,6 @@ const editable = {
                     if ((row >= 4 && row <= 6) || editable.is_ext) {
                         const temp_cods = Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext));
                         results = $.ui.autocomplete.filter(temp_cods, request.term);
-                        
                     } else {
                         results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
                     }
