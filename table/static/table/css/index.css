@@ -28,3 +28,7 @@
 .prof-no-impedimento {
     color: red
 }
+
+.materia-cb-bloqueada {
+    background-color: #92909078;
+}

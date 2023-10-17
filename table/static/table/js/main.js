@@ -16,6 +16,9 @@ import { save_edition } from "./modules/crud_turmas.js";
 // exportando para o crud_turmas
 export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable}; 
 
+//lista de disciplinas do CB que não podem ser editadas
+const listaCB = ["ACH0021 TADI", "ACH0141 SMD", "ACH0041 RP1"]
+
 //exibe a caixa de mensagens para alertas
 function openModal(title, messages) {
     const modalBody = document.getElementById("modalBody");
@@ -237,6 +240,8 @@ $(document).ready(function () {
     function handleDoubleClick(event) {
         const cell = event.currentTarget; // A célula em que ocorreu o duplo clique
         const target = event.target; // O elemento alvo do clique dentro da célula
+        //se a disciplina for do CB, não pode ser editada
+        if(listaCB.includes($(this)[0].innerText)) return
         let colIndex = cell.cellIndex;
         const rowIndex = cell.parentNode.rowIndex;
         let is_ext = true;
@@ -250,7 +255,7 @@ $(document).ready(function () {
                    
         //coluna das turmas não deve ser editável
         if(colIndex == 11) return
-        
+
         // Verifica se o alvo do clique é o ícone
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex, is_ext);
         
@@ -288,6 +293,7 @@ function coresRestrições() {
                 }
             })
         }
+        if(listaCB.includes(apelido)) cells.eq(i).addClass("materia-cb-bloqueada")
     }
 };
 
@@ -354,7 +360,8 @@ const editable = {
             }).focus(function() {
                 $(this).autocomplete("search");
             });    
-        }else {
+        }
+        else {
             //autocompleta com a matéria
             $(cell).autocomplete({
                 source: function(request, response) {
@@ -376,7 +383,6 @@ const editable = {
             }).focus(function() {
                 $(this).autocomplete("search");
             });
-            
         }
 
         // (C3) "MARK" CURRENT SELECTED CELL
