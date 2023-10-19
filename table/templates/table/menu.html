@@ -101,11 +101,13 @@
                             <th scope="col">CH Ímpar</th>
                         </thead>
                         <tbody>
-                            {% for nome, values in falta_aula.items%}  
+                            {% for nome, values in falta_aula.items%} 
+                            {% if values.I != -1%} 
                             <tr>
                                 <th scope="row">{{nome}}</th>
                                 <td>{{ values.I }}</td>
                             </tr>
+                            {% endif%}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -123,11 +125,13 @@
                             <th scope="col">CH Par</th>
                         </thead>
                         <tbody>
-                            {% for nome, values in falta_aula.items%}  
+                            {% for nome, values in falta_aula.items%}
+                            {% if values.P != -1%}   
                             <tr>
                                 <th scope="row">{{nome}}</th>
                                 <td>{{ values.P }}</td>
                             </tr>
+                            {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>

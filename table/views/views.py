@@ -234,23 +234,20 @@ def menu(request):
         if nome not in faltando_hrs:
             inicializa_prof(faltando_hrs, nome)
 
-        faltando_hrs[nome][tur.SemestreAno] += cred
-
         hrs = faltando_hrs[nome][tur.SemestreAno]
-        if hrs and hrs >= 8:
-            faltando_hrs[nome][tur.SemestreAno] = False
+
+        if hrs != -1:
+            faltando_hrs[nome][tur.SemestreAno] += cred
+
+        if hrs + cred >= 8:
+            faltando_hrs[nome][tur.SemestreAno] = -1
+
 
     for prof in profs:
         nome = prof.Apelido
 
         if nome not in faltando_hrs:
             inicializa_prof(faltando_hrs, nome)
-        else:
-            falta_par = faltando_hrs[nome]["P"]
-            falta_impar = faltando_hrs[nome]["I"]
-
-            if not (falta_par or falta_impar):
-                del faltando_hrs[nome]
 
     context = {
         "sem_tur": dict_incompletas,
