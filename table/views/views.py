@@ -195,7 +195,68 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
 
 
 def menu(request):
-    return render(request, "table/menu.html")
+    ano = 2023
+
+    # Obtém as disciplinas obrigatórias e anota se elas têm turmas associadas ao ano específico
+    disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria").annotate(
+        has_turmas_no_ano=Count('turma', filter=Q(turma__Ano=ano, turma__Eextra="N"))
+    ).order_by("SemestreIdeal")
+
+    # Obtém as disciplinas que não têm turmas associadas ao ano específico
+    discs_incompletas = disciplinas.exclude(has_turmas_no_ano=3)
+    dict_incompletas = {}
+
+    for disc in discs_incompletas:
+        turmas = disc.turma_set.filter(Eextra="N")
+        turmas_obrig = [2, 4, 94]
+        if turmas:
+            for tur in turmas:
+                turmas_obrig.remove(tur.CodTurma)
+
+        formatted_turmas = [f"{num:02d}" for num in turmas_obrig]
+        result_string = ", ".join(formatted_turmas)
+
+        dict_incompletas[disc.Abreviacao] = {
+            "disc": disc,
+            "faltando": result_string,
+            "smt": "impar" if disc.SemestreIdeal % 2 else "par"
+        }
+
+    faltando_hrs = {}
+    turmas = Turma.objects.filter(Ano=ano)
+    profs = Professor.objects.all()
+
+    for tur in turmas:
+
+        nome = tur.NroUSP.Apelido
+        cred = tur.CoDisc.CreditosAula
+
+        if nome not in faltando_hrs:
+            inicializa_prof(faltando_hrs, nome)
+
+        faltando_hrs[nome][tur.SemestreAno] += cred
+
+        hrs = faltando_hrs[nome][tur.SemestreAno]
+        if hrs and hrs >= 8:
+            faltando_hrs[nome][tur.SemestreAno] = False
+
+    for prof in profs:
+        nome = prof.Apelido
+
+        if nome not in faltando_hrs:
+            inicializa_prof(faltando_hrs, nome)
+        else:
+            falta_par = faltando_hrs[nome]["P"]
+            falta_impar = faltando_hrs[nome]["I"]
+
+            if not (falta_par or falta_impar):
+                del faltando_hrs[nome]
+
+    context = {
+        "sem_tur": dict_incompletas,
+        "falta_aula": faltando_hrs
+    }
+    return render(request, "table/menu.html", context)
 
 
 def redirect(request):
@@ -385,62 +446,8 @@ def pref_planilha(request):
     return render(request, "table/menu.html")
 
 
-def listar_pendencias(request):
-    if request.method == "POST":
-        ano = 2023
-        alertas = {}
-
-        # Obtém as disciplinas obrigatórias e anota se elas têm turmas associadas ao ano específico
-        disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria").annotate(
-            has_turmas_no_ano=Count('turma', filter=Q(turma__Ano=ano))
-        )
-
-        # Obtém as disciplinas que não têm turmas associadas ao ano específico
-        disciplinas_sem_turmas = disciplinas.filter(has_turmas_no_ano=0)
-
-        # for d in disciplinas_sem_turmas:
-        #     print(d)
-
-        faltando_hrs = {}
-        turmas = Turma.objects.filter(Ano=ano)
-        profs = Professor.objects.all()
-
-        for tur in turmas:
-
-            nome = tur.NroUSP.NomeProf
-            cred = tur.CoDisc.CreditosAula
-
-            if nome not in faltando_hrs:
-                inicializa_prof(faltando_hrs, nome)
-
-            faltando_hrs[nome][tur.SemestreAno] += cred
-
-            hrs = faltando_hrs[nome][tur.SemestreAno]
-            if hrs and hrs >= 8:
-                faltando_hrs[nome][tur.SemestreAno] = False
-
-        for prof in profs:
-            nome = prof.NomeProf
-
-            if nome not in faltando_hrs:
-                inicializa_prof(faltando_hrs, nome)
-            else:
-                falta_par = faltando_hrs[nome]["P"]
-                falta_impar = faltando_hrs[nome]["I"]
-
-                if not(falta_par or falta_impar):
-                    del faltando_hrs[nome]
-
-        # for n in faltando_hrs.keys():
-        #    print(f"{n}: par = {faltando_hrs[n]['P']} // impar = {faltando_hrs[n]['I']}")
-
-        return HttpResponse(alertas)
-    else:
-        return HttpResponse("fail")
-
-
 def inicializa_prof(dicio, nome):
     dicio[nome] = {
-        "P": 0,
-        "I": 0
+        "I": 0,
+        "P": 0
     }
