@@ -242,9 +242,12 @@ def menu(request):
         if hrs + cred >= 8:
             faltando_hrs[nome][tur.SemestreAno] = -1
 
-
     for prof in profs:
         nome = prof.Apelido
+        #PRECISA CONSIDERAR PG
+
+        pg_par = prof.PG_1_semestre
+        pg_impar = prof.PG_2_semestre
 
         if nome not in faltando_hrs:
             inicializa_prof(faltando_hrs, nome)

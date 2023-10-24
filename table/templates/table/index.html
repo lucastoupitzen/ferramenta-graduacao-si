@@ -8,7 +8,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-
     <!-- Carrega o framework Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -41,39 +40,7 @@
     {{ impedimentos_totais|json_script:"impedimentos_totais"}}
 
     <title>Cronograma</title>
-    
-    <style>
-        .red-transparent {
-            border: 2px solid #ff0000;
-            box-shadow: inset 0 0 0 1px #ff0000;
-        }
-        .red-impedimento {
-            background-color: #ff00004a;
-        }
-        /* Estilos para a mensagem flutuante */
-        .floating-message {
-            position: absolute;
-            background-color: #f2f2f2;
-            color: #333;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rborder-color:gba(0, 0, 0, 0.1);
-        }
-        .custom-border td {
-            border-color: #C0C0C0;
-            border-width: 2px; 
-        }
-        #tbl_ext{
-            font-style: italic;
-            font-family: 'Times New Roman', serif;
-        }
-        #tbl_ext td {
-            border-color: #C0C0C0;
-            border-width: 1px; 
-        }
-    </style>
+
 </head>
 
 <body>
