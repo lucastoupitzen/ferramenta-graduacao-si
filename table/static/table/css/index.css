@@ -14,12 +14,12 @@
     border-radius: 4px;
     padding: 8px;
     font-size: 14px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rborder-color:gba(0, 0, 0, 0.1);
 }
 
 .custom-border td {
     border-color: #C0C0C0;
-    border-width: 3px; 
+    border-width: 2px; 
 }
 
 .prof-na-restricão {
@@ -33,6 +33,7 @@
 .materia-cb-bloqueada {
     background-color: #92909078;
 }
+
 
 /* controle do pop-up de RP */
 .popup {
@@ -87,3 +88,13 @@
     font-size: 24px;
     cursor: pointer;
 }
+
+#tbl_ext{
+    font-style: italic;
+    font-family: 'Times New Roman', serif;
+}
+#tbl_ext td {
+    border-color: #C0C0C0;
+    border-width: 1px; 
+}
+
