@@ -15,6 +15,23 @@ def update_prof(inf, year, smt):
     turma_db.save()
     return turma_db
 
+def update_prof_RP(inf, year, smt):
+    smt_ano = "I" if smt % 2 else "P"
+    extra = "N"
+    if inf["extra"]:
+        extra = "S"
+
+    turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
+                                 CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra)
+    prof = Professor.objects.get(Apelido=inf["professor"])
+    turma_db.NroUSP = prof
+    turma_db.save()
+    prof_RP = Professor.objects.get(Apelido=inf["ant_prof"])
+    turma_RP = Turmas_RP.objects.get(turma=turma_db, professor=prof_RP)
+    turma_RP.professor = prof
+    turma_RP.save()
+    return turma_db
+
 
 def update_cod(data, year, erros, smt, ind_modif):
     inf = data["info"]
@@ -49,6 +66,75 @@ def deletar_valor(data, year, erros):
     except:
         erros["delecao"] = "Erro ao deletar par de células\n"
 
+def deletar_valor_RP(data, year, erros):
+    # Iterar sobre as turmas do banco de dados e excluir aquelas que não estão em tbl_user
+    infos_user = data["info"]
+    smt_ano = "I" if data["semestre"] % 2 else "P"
+
+    codisc = "ACH0042"
+
+    try:
+        dia = Dia.objects.get(DiaSemana=int(infos_user["dia"]), Horario=int(infos_user["horario"]))
+        obj_turma = dia.Turmas.get(Ano=year, CoDisc=codisc,
+                                   CodTurma=str(infos_user["cod_turma"]), SemestreAno=smt_ano)
+        num_days_turma = obj_turma.dia_set.all()
+        
+        if len(num_days_turma) > 1:
+            obj_turma.dia_set.remove(dia)
+        else:
+            obj_turma.delete()
+
+    except:
+        return
+
+def cadastrar_turma_RP(turma, ano, smt):
+
+    extra = "N"
+    if turma["horario"] in (2, 4) or turma["extra"]:
+        extra = "S"
+
+    smt_ano = "I" if smt % 2 else "P"
+
+    try:
+        nova_turma = Turma.objects.create(
+            CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
+            CodTurma=turma["cod_turma"],
+            Ano=ano,
+            NroUSP=Professor.objects.get(Apelido=turma["professor"]),
+            Eextra=extra,
+            SemestreAno=smt_ano
+        )
+        nova_turma.save()
+        nova_turma_RP = Turmas_RP(
+        turma = nova_turma,
+        professor = Professor.objects.get(Apelido=turma["professor"]),
+        )
+        try:
+            nova_turma_RP.save()
+        except:
+            print("erro")
+            return False
+    except:
+        nova_turma = Turma.objects.get(
+        CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
+        CodTurma=turma["cod_turma"],
+        Ano=ano,
+        Eextra=extra,
+        SemestreAno=smt_ano
+        )
+        nova_turma_RP = Turmas_RP(
+        turma = nova_turma,
+        professor = Professor.objects.get(Apelido=turma["professor"]),
+        )
+        try:
+            nova_turma_RP.save()
+        except:
+            return False
+    
+    return nova_turma
+
+    
+
 
 def cadastrar_turma(turma, ano, smt):
     extra = "N"
@@ -56,7 +142,8 @@ def cadastrar_turma(turma, ano, smt):
         extra = "S"
 
     smt_ano = "I" if smt % 2 else "P"
-    nova_turma = Turma(
+
+    nova_turma = Turma.objects.create(
         CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
         CodTurma=turma["cod_turma"],
         Ano=ano,
@@ -69,7 +156,7 @@ def cadastrar_turma(turma, ano, smt):
         return nova_turma
     except:
         return False
-    
+        
 
 def cadastrar_dia(turma_db, turma_user):
     dia_materia = Dia(DiaSemana=turma_user["dia"], Horario=turma_user["horario"])

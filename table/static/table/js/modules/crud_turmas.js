@@ -14,6 +14,7 @@ const save_edition = {
         const cods_auto =  $.extend(cods_auto_ext, cods_auto_obrig);
         const vUsercod  = type === "d" ? vl["cod"] : $(cell).html().trim();
         const vUserProf =  type === "d" ? vl["pf"]: $(cell).next().html().trim();
+    
         const cod_db =  cods_auto.hasOwnProperty(vUsercod) ? cods_auto[vUsercod] : "";
         
         // Obtém todas as células da linha
@@ -40,20 +41,43 @@ const save_edition = {
             
 
         }
-        
-        let infosParCell = {
-            "cod_disc" : cod_db,
-            "professor" : vUserProf,
-            "horario": row,
-            "dia": dia,
-            "cod_turma": lastCellContent,
-            "tipo": type,
-            "extra": vl["extra"]
+        if(vUsercod == "ACH0042 RP2") {
+            const nomesSeparados = vUserProf.split(" / ");
+            vl["ant_prof"] = "A definir";
+            nomesSeparados.forEach((nome) => {
+                let infosParCell = {
+                    "cod_disc" : cod_db,
+                    "professor" : nome,
+                    "horario": row,
+                    "dia": dia,
+                    "cod_turma": lastCellContent,
+                    "tipo": type,
+                    "extra": vl["extra"]
+                }
+                
+                if(type === "u") infosParCell = $.extend(infosParCell, vl);
+                console.log(infosParCell)
+                save_edition.requisicao(infosParCell, cell, row, col);
+            })
+
+        } else {
+            let infosParCell = {
+                "cod_disc" : cod_db,
+                "professor" : vUserProf,
+                "horario": row,
+                "dia": dia,
+                "cod_turma": lastCellContent,
+                "tipo": type,
+                "extra": vl["extra"]
+            }
+            
+            if(type === "u") infosParCell = $.extend(infosParCell, vl);
+            console.log("Aqui está o infosParCell") 
+            console.log(infosParCell)
+            save_edition.requisicao(infosParCell, cell, row, col);
         }
         
-        if(type === "u") infosParCell = $.extend(infosParCell, vl);
-        console.log(infosParCell)
-        save_edition.requisicao(infosParCell, cell, row, col);
+        
     },
     requisicao: (content, cell_cod, row, col) => {
         const myEvent = { 
@@ -72,6 +96,7 @@ const save_edition = {
               "X-CSRFToken": getCookie("csrftoken"), 
             },
             success: (data) => {
+                console.log($("#url-data").data("url"))
                 const erros = data["erros"]
                 const alertas = data["alertas"]
                 const cells_prof_modif = data["cells_modif"]
