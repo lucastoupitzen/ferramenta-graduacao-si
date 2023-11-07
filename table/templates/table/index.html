@@ -30,6 +30,7 @@
     {%load static %}
     <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
     <script type="module" src="{% static 'table/js/main.js' %}"></script>
+
     {{ semestre|json_script:"smt"}}
     {{ detalhes_profs|json_script:"dtl_profs" }}
     {{ cods_tbl_hr|json_script:"cods_auto_obrig" }}
@@ -38,6 +39,7 @@
     {{ auto_profs|json_script:"auto_profs"}}
     {{ rest_horarios|json_script:"rest"}}
     {{ impedimentos_totais|json_script:"impedimentos_totais"}}
+    <!-- {{ turmas_rp|json_script:"turmas_rp" }} -->
 
     <title>Cronograma</title>
 
@@ -122,7 +124,21 @@
                 </tr>
             </tbody>
         </table>
-        
+
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span id="closePopup" class="close">&times;</span>
+                <h4>Atribua até 2 professores para a disciplina RP2:</h2>
+                <p>Professor:</p>
+                <input type="text" id="prof_rp1" class="form-control autocomplete campo1" placeholder="Digite o nome">
+                <p>Professor:</p>
+                <input type="text" id="prof_rp2" class="form-control autocomplete campo2" placeholder="Digite o nome">
+            
+                <input type="submit" class="btn btn-primary" id="submitForm" value="Salvar">
+            </div>
+        </div>
+
+
 
         <div class="container">
             <div class="row">

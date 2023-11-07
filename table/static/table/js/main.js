@@ -9,10 +9,12 @@ const cods_auto_obrig = JSON.parse(document.getElementById("cods_auto_obrig").te
 const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
+// const turmas_rp = JSON.parse(document.getElementById("turmas_rp").textContent);
 
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
+import { controlaPopUp } from "./modules/popUp.js"
 // exportando para o crud_turmas
 export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable}; 
 
@@ -65,7 +67,6 @@ $(document).ready(function () {
         coresRestrições();
     })
 
-      
     //Lida com os detalhes do professor
     $(function() {
         $("#prof").autocomplete({
@@ -89,6 +90,17 @@ $(document).ready(function () {
                 document.getElementById("infos_prof").style.display="block"; 
             }
         });
+    });
+
+    //autocomplete do pop-up de rp
+    $(function() {
+        $("#prof_rp1, #prof_rp2").autocomplete({
+            source: function(request, response) {
+                let results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
+                response(results);
+            },
+            minLength: 2
+        })
     });
 
     // Manipula o clique no ícone de "X" para fechar os detalhes do professor
@@ -166,6 +178,9 @@ $(document).ready(function () {
     
         return novaLista;
     }    
+
+    // $(document).on('click', '#showPopup', function(event) {
+    //     controlaPopUp()})
 
     //Mostra a restrições quando o ícone é clicado
     $(document).on('click', '.editable td i', function (e) {
@@ -255,6 +270,7 @@ $(document).ready(function () {
                    
         //coluna das turmas não deve ser editável
         if(colIndex == 11) return
+       
 
         // Verifica se o alvo do clique é o ícone
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex, is_ext);
@@ -341,25 +357,32 @@ const editable = {
         
         // (B2.1) ADD AUTOCOMPLETE
         if (col % 2 === 0){
-            //autocompleta com o nome do professor
-            $(cell).autocomplete({
-                source: function(request, response) {
-                    const results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
-                    response(results.slice(0, 3));
-                },
-                minLength: 2,
-                select: function(event, ui) {
-                    const nomeProf = ui.item.value;
-                    const apelidoProf = auto_profs[nomeProf];
-                    $(cell).html(apelidoProf);
-                    $(cell).removeClass("prof-na-restricão");
-                    $(cell).removeClass("prof-no-impedimento");
-                    coresRestrições();
-                    return false;
-                }
-            }).focus(function() {
-                $(this).autocomplete("search");
-            });    
+        
+            
+            if($(cell).prev()[0].innerText == "ACH0042 RP2") controlaPopUp($(cell), auto_profs);
+            else {
+                //autocompleta com o nome do professor
+                $(cell).autocomplete({
+                    source: function(request, response) {
+                        const results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
+                        response(results.slice(0, 3));
+                    },
+                    minLength: 2,
+                    select: function(event, ui) {
+                        const nomeProf = ui.item.value;
+                        const apelidoProf = auto_profs[nomeProf];
+                        $(cell).html(apelidoProf);
+                        $(cell).removeClass("prof-na-restricão");
+                        $(cell).removeClass("prof-no-impedimento");
+                        coresRestrições();
+                        return false;
+                    }
+                }).focus(function() {
+                    $(this).autocomplete("search");
+                });
+            }
+               
+                
         }
         else {
             //autocompleta com a matéria
@@ -391,19 +414,26 @@ const editable = {
         // (C4) PRESS ENTER/ESC OR CLICK OUTSIDE TO END EDIT
         // A ideia do ESC é recuperar o valor de antes do usuário modificar
         // ainda falta implementar
-        window.addEventListener("click", editable.close);
-        cell.onkeydown = evt => {
-            if (evt.key=="Enter" || evt.key=="Escape") {
-                editable.close(evt.key=="Enter" ? true : false);
-                return false;
-            }
-        };
+        if($(cell).prev()[0].innerText == "ACH0042 RP2") {
+            $("#submitForm").on("click", editable.close);
+        } 
+        else {
+            window.addEventListener("click", editable.close);
+            cell.onkeydown = evt => {
+                if (evt.key=="Enter" || evt.key=="Escape") {
+                    editable.close(evt.key=="Enter" ? true : false);
+                    return false;
+                }
+            };
+        }
+        
 
     },
 
     removeEditable: (selected, isCod, valueUser, v_nextCell, v_prevCell) =>{
 
         // Impede o usuário de deixar um par imcompleto
+
         let v_cell_lado;
         let cell_lado;
         if(isCod){
@@ -413,10 +443,14 @@ const editable = {
             v_cell_lado = v_prevCell;
             cell_lado = $(selected).prev();   
         }
-        if(valueUser == "" && v_cell_lado != "") $(cell_lado).html("")
+
+       
+        if(!listaCB.includes(cell_lado[0].innerText)) {
+            $(v_cell_lado).html("A definir")
+        } else if(valueUser == "" && v_cell_lado != "") $(cell_lado).html("")
 
         // REMOVE "EDITABLE"
-        window.getSelection().removeAllRanges();
+        window.getSelection().removeAllRanges(); 
         $(selected).attr("contenteditable", "false");
 
         // RESTORE CLICK LISTENERS
@@ -428,7 +462,6 @@ const editable = {
     // (C) END "EDIT MODE"
     close: evt => {
         if (evt.target !== editable.selected) {
-            console.log(editable.is_ext)
             const valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
             const col = editable.colIndex;
             const row = editable.rowIndex;
@@ -463,17 +496,43 @@ const editable = {
             }else if(valueUser !== ""){
                 let ExistProf = false;
 
-                const nomeEncontrado = Object.keys(auto_profs).find(function(nome) {
-                    return auto_profs[nome] === valueUser;
-                });
-                  
-                if (nomeEncontrado) ExistProf = true 
-                
-                if(!ExistProf){
-                    erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
-                }else{
-                    validInput = true;
+                //checar se é o caso de RP
+                if(valuePrevCell == "ACH0042 RP2") {
+                    const nomesSeparados = valueUser.split(" / ");
+                    nomesSeparados.forEach(function (name) {
+                        const nomeEncontrado = Object.keys(auto_profs).find(function(nome) {
+                            return auto_profs[nome] === name;
+                        });
+                          
+                        if (nomeEncontrado) {
+                            console.log(name + " encontrado")
+                            ExistProf = true 
+                        } else {
+                            console.log(name + " não encontrado")
+                            ExistProf = false 
+                        }
+                        
+                        if(!ExistProf){
+                            erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
+                        }else{
+                            validInput = true;
+                        }
+                    } )
                 }
+                else {
+                    const nomeEncontrado = Object.keys(auto_profs).find(function(nome) {
+                        return auto_profs[nome] === valueUser;
+                    });
+                      
+                    if (nomeEncontrado) ExistProf = true 
+                    
+                    if(!ExistProf){
+                        erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
+                    }else{
+                        validInput = true;
+                    }
+                }
+                
                 
             }
     
@@ -486,28 +545,31 @@ const editable = {
 
             // (C4) Se a célula ao lado estiver vazia ela fica editável
             //o indice 0 tem o elemento DOM da célula
-            if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1, editable.is_ext);
+            if(parIncompletoDireita) editable.edit(nextCell.get(0), row, col + 1, editable.is_ext)
             if(parIncompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1, editable.is_ext);
 
             //(C5) Se o par de células estiver completo chama o save_edition
             
             let vl = { "extra": false };
             if(editable.is_ext) vl["extra"] = true;
-
             if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
             || (!colCod && !parIncompletoEsquerda && valueUser !== ""))){
                 //"i/u" == insert/update
                 if(editable.previousValue !== ""){
                     //update
                     if(colCod)
-                        vl["ant_cod"] = editable.previousValue;
+                    vl["ant_cod"] = editable.previousValue;
                     else
-                        vl["ant_prof"] = editable.previousValue;
+                    vl["ant_prof"] = editable.previousValue;
 
                     save_edition.extrairDados(editable.selected, col, row, colCod, "u", vl);
+                    
                 }else{
+                    
                     //insert
                     save_edition.extrairDados(editable.selected, col, row, colCod, "i", vl);
+    
+                    
                 }
             }
 
@@ -541,3 +603,4 @@ function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell, ext){
         return;
     }); 
 }
+

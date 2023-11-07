@@ -30,9 +30,17 @@ def index(request, semestre="2"):
         Q(Ano=ano, Eextra="S", SemestreAno=smt_ano)
     )
 
+    turmas_rp_db = Turmas_RP.objects.all()
+
     for tur_materia in vls_turmas:
         cod_disc = tur_materia.CoDisc
-        prof = tur_materia.NroUSP.Apelido
+        if str(cod_disc) == "ACH0042":
+            prof = []
+            for turma_rp in turmas_rp_db:
+                if(turma_rp.turma.CodTurma == tur_materia.CodTurma):
+                    prof.append(turma_rp.professor.Apelido)
+            prof = " / ".join(prof)
+        else: prof = tur_materia.NroUSP.Apelido
         t_nro = int(tur_materia.CodTurma)
         t_extra = tur_materia.Eextra
 
@@ -277,6 +285,7 @@ def save_modify(request):
 
     data = json.load(request)
     info_par = data["info"]
+    print(info_par)
     ano = datetime.now().year
 
     erros = {}
@@ -288,13 +297,27 @@ def save_modify(request):
 
     elif info_par["tipo"] == "i":
 
-        aula_manha_noite(data, alertas)
-        aula_noite_outro_dia_manha(data, alertas)
+        # caso de RP
+        if info_par["cod_disc"] == "ACH0042":
 
-        if not aula_msm_horario(info_par, ano, data, erros):
-            turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
-            update_prof(info_par, ano, data["semestre"])
-            atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
+            aula_manha_noite(data, alertas)
+            aula_noite_outro_dia_manha(data, alertas)
+
+            if not aula_msm_horario(info_par, ano, data, erros):
+            
+                turma_obj = cadastrar_turma_RP(info_par, ano, data["semestre"])
+                update_prof(info_par, ano, data["semestre"])
+                atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
+                
+        else:
+            aula_manha_noite(data, alertas)
+            aula_noite_outro_dia_manha(data, alertas)
+
+            if not aula_msm_horario(info_par, ano, data, erros):
+            
+                turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
+                update_prof(info_par, ano, data["semestre"])
+                atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
 
     elif info_par["tipo"] == "u":
 
@@ -303,8 +326,19 @@ def save_modify(request):
             aula_noite_outro_dia_manha(data, alertas)
 
             if not aula_msm_horario(info_par, ano, data, erros):
-                turma_obj = update_prof(info_par, ano, data["semestre"])
-                indice_tbl_update(turma_obj, ind_modif, info_par)
+                if info_par["cod_disc"] == "ACH0042":
+                    deletar_valor_RP(data, ano, erros)
+                    aula_manha_noite(data, alertas)
+                    aula_noite_outro_dia_manha(data, alertas)
+
+                    if not aula_msm_horario(info_par, ano, data, erros):
+                    
+                        turma_obj = cadastrar_turma_RP(info_par, ano, data["semestre"])
+                        update_prof(info_par, ano, data["semestre"])
+                        atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
+                else:
+                    turma_obj = update_prof(info_par, ano, data["semestre"])
+                    indice_tbl_update(turma_obj, ind_modif, info_par)
 
         elif "ant_cod" in info_par:
             update_cod(data, ano, erros, data["semestre"], ind_modif)

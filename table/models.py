@@ -102,6 +102,19 @@ class Dia(models.Model):
 
     def __str__(self):
         return f"{self.get_DiaSemana_display()}/{self.get_Horario_display()}"
+    
+class Turmas_RP(models.Model):
+
+    turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
+
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE, default="")
+
+    class Meta:
+        unique_together = (("turma", "professor"),)
+
+    def __str__(self):
+        return "0" + str(self.turma) + "/" + str(self.professor)
+
 
 
 class MtvRestricao(models.Model):
