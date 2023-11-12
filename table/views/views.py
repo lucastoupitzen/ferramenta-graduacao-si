@@ -14,12 +14,11 @@ from .salvar_modificacoes import *
 from .preferencias_upload import *
 
 
-def index(request, semestre="2"):
+def index(request, semestre, ano):
     # cria listas com referências diferentes
     # elas serão iteradas no index.html para carregar os dados na planilha editável
     tbl_vls = [[""] * 10 for _ in range(8)]
     tbl_vls.insert(3, ["", ""])
-    ano = datetime.now().year
 
     tbl_extra = [[""] * 10 for _ in range(4)]
 
@@ -190,7 +189,9 @@ def index(request, semestre="2"):
         "mtr_auto_nome": mtr_auto_nome,
         "tables_info": tables_info,
         "impedimentos_totais": impedimentos_totais,
-        "tbl_extra": tbl_extra
+        "tbl_extra": tbl_extra,
+        "anoAberto": AnoAberto.objects.get(id=1).Ano,
+        "ano": ano
     }
     return render(request, "table/index.html", context)
 
@@ -203,7 +204,7 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
 
 
 def menu(request):
-    ano = 2023
+    ano = int(AnoAberto.objects.get(id=1).Ano)
 
     # Obtém as disciplinas obrigatórias e anota se elas têm turmas associadas ao ano específico
     disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria").annotate(
@@ -215,7 +216,7 @@ def menu(request):
     dict_incompletas = {}
 
     for disc in discs_incompletas:
-        turmas = disc.turma_set.filter(Eextra="N")
+        turmas = disc.turma_set.filter(Eextra="N").exclude(CoDisc__CoDisc="ACH0041")
         turmas_obrig = [2, 4, 94]
         if turmas:
             for tur in turmas:
@@ -225,6 +226,7 @@ def menu(request):
         result_string = ", ".join(formatted_turmas)
 
         dict_incompletas[disc.Abreviacao] = {
+
             "disc": disc,
             "faltando": result_string,
             "smt": "impar" if disc.SemestreIdeal % 2 else "par"
@@ -235,7 +237,8 @@ def menu(request):
     profs = Professor.objects.all()
 
     for tur in turmas:
-
+        if not tur.NroUSP.Apelido:
+            continue
         nome = tur.NroUSP.Apelido
         cred = tur.CoDisc.CreditosAula
 
@@ -260,7 +263,10 @@ def menu(request):
         if nome not in faltando_hrs:
             inicializa_prof(faltando_hrs, nome)
 
+    anos_ant = [i for i in range(ano - 5, ano)]
     context = {
+        "anos_ant": anos_ant,
+        "anoAberto": ano,
         "sem_tur": dict_incompletas,
         "falta_aula": faltando_hrs
     }
@@ -270,7 +276,8 @@ def menu(request):
 def redirect(request):
     if request.method == "POST":
         valor_semestre = request.POST["select1"]
-        diretorio = str("/table/" + valor_semestre + "/")
+        ano = request.POST["anoSelecionado"]
+        diretorio = str("/table/" + valor_semestre + "/" + ano + "/")
         return HttpResponseRedirect(diretorio)
     else:
         return HttpResponse("fail")
@@ -286,7 +293,7 @@ def save_modify(request):
     data = json.load(request)
     info_par = data["info"]
     print(info_par)
-    ano = datetime.now().year
+    ano = AnoAberto.objects.get(id=1).Ano
 
     erros = {}
     alertas = {}
@@ -310,6 +317,7 @@ def save_modify(request):
                 atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
                 
         else:
+            #ano aq
             aula_manha_noite(data, alertas)
             aula_noite_outro_dia_manha(data, alertas)
 
@@ -349,7 +357,7 @@ def save_modify(request):
 def download_zip_planilhas(request):
     # content-type of response
     if request.method == "POST":
-
+        ano = request.POST["ano_xlsx"]
         # cria o arquivo zip
         z = zipfile.ZipFile('Planilhas_graduação_SI.zip', 'w', zipfile.ZIP_DEFLATED)
 
@@ -364,11 +372,11 @@ def download_zip_planilhas(request):
         z.write("Docentes.xlsx")
 
         # planilha de distribuição semestres pares
-        planilha_distribuição_semestre("par")
+        planilha_distribuição_semestre("par", ano)
         z.write("Distribuição_par.xlsx")
 
         # planilha de distribuição semestres impares
-        planilha_distribuição_semestre("impar")
+        planilha_distribuição_semestre("impar", ano)
         z.write("Distribuição_impar.xlsx")
 
         z.close()
@@ -388,13 +396,13 @@ def download_zip_planilhas(request):
         return "erro"
 
 
-def planilha_distribuição_semestre(semestre):
+def planilha_distribuição_semestre(semestre, ano):
     wb = openpyxl.Workbook()
     sheet_si = wb.active
     sheet_si.title = "SI"
-    planilha_si(sheet_si, semestre)
+    planilha_si(sheet_si, semestre, ano)
     sheet_extra = wb.create_sheet("Extra")
-    planilha_extra(sheet_extra)
+    planilha_extra(sheet_extra, ano)
     wb.save(f"Distribuição_{semestre}.xlsx")
     wb.close()
 
@@ -422,10 +430,11 @@ def pref_planilha(request):
             workbook = openpyxl.load_workbook(excel_file)
             worksheet = workbook.active
             profs = Professor.objects.all()
+            ano = AnoAberto.objects.get(id=1).Ano
 
             header = [cell.value for cell in worksheet[1]]
             if excel_type == "pref_disc_hro":
-                Preferencias.objects.all().delete()
+                Preferencias.objects.filter(AnoProf=ano).delete()
                 Restricao.objects.all().delete()
                 MtvRestricao.objects.all().delete()
 
@@ -481,6 +490,7 @@ def pref_planilha(request):
 
 
 def inicializa_prof(dicio, nome):
+    # falta somar a pg do ano
     dicio[nome] = {
         "I": 0,
         "P": 0

@@ -2,8 +2,8 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path("table/<int:semestre>/", views.index, name="table"),
-    path("table", views.index, name="table"),
+    path("table/<int:semestre>/<int:ano>/", views.index, name="table"),
+    #path("table", views.index, name="table"),
     path("save_modify", views.save_modify, name="save_modify"),
     path(
         "download_zip_planilhas",

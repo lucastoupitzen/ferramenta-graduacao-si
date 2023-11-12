@@ -102,7 +102,8 @@ class Dia(models.Model):
 
     def __str__(self):
         return f"{self.get_DiaSemana_display()}/{self.get_Horario_display()}"
-    
+
+
 class Turmas_RP(models.Model):
 
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
@@ -116,10 +117,11 @@ class Turmas_RP(models.Model):
         return "0" + str(self.turma) + "/" + str(self.professor)
 
 
-
 class MtvRestricao(models.Model):
     mtv = models.CharField(max_length=500, default="")
 
+class AnoAberto(models.Model):
+    Ano = models.DecimalField(max_digits=4, decimal_places=0, default=2022)
 
 class Restricao(models.Model):
     PERIODO_CHOICES = (

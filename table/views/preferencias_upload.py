@@ -8,7 +8,7 @@ def pref_disc_excel_impar(sem, row, prof_db, header):
     values = (
         [row for row in row[2:18]] if sem == "impar" else [row for row in row[18:32]]
     )
-    ano = datetime.now().year
+    ano = AnoAberto.objects.get(id=1).Ano
     ini = 18 if sem == "par" else 2
     for i, value in enumerate(values, start=ini):
         if value is None or value == "Não Selecionado":
