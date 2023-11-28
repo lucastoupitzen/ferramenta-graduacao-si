@@ -1,4 +1,8 @@
+import json
+import unicodedata
+
 import openpyxl
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
 from table.models import *
 
@@ -62,4 +66,25 @@ def load_rp1(request):
 def page_rp1(request):
     rp1_turmas = RP1Turma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano)
 
-    return render(request, "table/rp1Table.html", {"rp1": rp1_turmas})
+    profs_objs = Professor.objects.all()
+    auto_profs = {}
+    for prof_obj in profs_objs:
+        auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
+
+    context = {
+        "rp1": rp1_turmas,
+        "auto_profs": auto_profs
+    }
+    return render(request, "table/rp1Table.html", context)
+
+
+def salvar_profs_rp1(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if not is_ajax:
+        return HttpResponseBadRequest('Invalid request')
+    if request.method != 'POST':
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+
+    data = json.load(request)
+    print(data)
+    return JsonResponse({})

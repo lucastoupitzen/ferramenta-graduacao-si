@@ -146,10 +146,8 @@ class Turmas_RP(models.Model):
 class MtvRestricao(models.Model):
     mtv = models.CharField(max_length=500, default="")
 
-
 class AnoAberto(models.Model):
     Ano = models.DecimalField(max_digits=4, decimal_places=0, default=2022)
-
 
 class Restricao(models.Model):
     PERIODO_CHOICES = (

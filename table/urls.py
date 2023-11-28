@@ -5,6 +5,7 @@ urlpatterns = [
     path("table/<int:semestre>/<int:ano>/", views.index, name="table"),
     #path("table", views.index, name="table"),
     path("save_modify", views.save_modify, name="save_modify"),
+    path("save_p", rp1_table.salvar_profs_rp1, name="save_p"),
     path(
         "download_zip_planilhas",
         views.download_zip_planilhas,

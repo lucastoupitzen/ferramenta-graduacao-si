@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-{% load static %}
 <html lang="pt-br">
-
 
 <head>
     <meta charset="UTF-8">
@@ -21,60 +19,85 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
+    <!-- Ícone -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
+    {%load static %}
+    <script type="module" src="{% static 'table/js/rp1Table.js' %}"></script>
+    {{ auto_profs|json_script:"auto_profs"}}
+    
+    <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
+
+    <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+
+    
     <title>RP1</title>
 
 </head>
 
 <body>
-    <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        <label for="inputFile" class="form-label">Atualizar/Planilha</label>
-        <input type="file" class="form-control" id="inputFile" name="excel_file">
-
-        <button type="submit" class="btn btn-primary">Enviar</button>
-    </form>
-
-    <table class="table table-bordered table-hover">
-        <thead>
-            <th scope="col" class="align-middle" >TURMA</th>
-            <th scope="col" class="align-middle" >HORARIO</th>
-            <th scope="col" class="align-middle" >CURSOS</th>
-            <th scope="col" class="align-middle" >DOCENTES</th>
-            <th scope="col" class="align-middle  text-nowrap">Profs SI</th>
-            <th scope="col" class="align-middle"> Adicionar</th>
-        </thead>
-        <tbody>
-            {% for query in rp1%}
-            <tr>
-                <td>{{ query.codigo}}</td>
-
-                {% for d in query.diaaularp1_set.all%}
-                <td>{{ d.dia_semana }} {{d.horario}}</td>
-                {% endfor%}
+    <div style="width:90%; font-size: 12px;" class="mx-auto">
+        <div id="url-data" data-url="{% url 'save_p' %}"></div>
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span id="closePopup" class="close">&times;</span>
+                <h4>Atribua até 3 professores para a disciplina RP1:</h2>
                 
-                <td>{{ query.cursos }}
-                <td>{{ query.profs_adicionais }}</td>
-                <td id="si_profs"></td>
-                <td class="align-middle text-center" style="font-size: 2em;">
-                    <i class="bi bi-plus icone"></i>
-                </td>
-            </tr>
-            {%endfor%}
-        </tbody>
-    </table>
+                <p>Professor:</p>
+                <input type="text" id="prof_rp1" class="form-control autocomplete campo1" placeholder="Digite o nome">
+                <p id="0" style="display:none"></p>
+                
+                <p>Professor:</p>
+                <input type="text" id="prof_rp2" class="form-control autocomplete campo2" placeholder="Digite o nome">
+                <p id="1" style="display:none"></p>
+                
+                <p>Professor:</p>
+                <input type="text" id="prof_rp3" class="form-control autocomplete campo3" placeholder="Digite o nome">
+                <p id="2" style="display:none"></p>
+
+                <input type="submit" class="btn btn-primary" id="submitForm" value="Salvar">
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label for="inputFile" class="form-label">Atualizar/Planilha</label>
+            <input type="file" class="form-control" id="inputFile" name="excel_file">
+
+            <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+
+        <table class="table table-bordered table-hover">
+            <thead>
+                <th scope="col" class="align-middle" >TURMA</th>
+                <th scope="col" class="align-middle" >HORARIO</th>
+                <th scope="col" class="align-middle" >CURSOS</th>
+                <th scope="col" class="align-middle" >DOCENTES</th>
+                <th scope="col" class="align-middle  text-nowrap">Profs SI</th>
+                <th scope="col" class="align-middle"> Adicionar</th>
+            </thead>
+            <tbody>
+                {% for query in rp1%}
+                <tr>
+                    
+                    <td>{{ query.codigo}}</td>
+
+                    {% for d in query.diaaularp1_set.all%}
+                    <td class="text-nowrap">{{ d.dia_semana }} {{d.horario}}</td>
+                    {% endfor%}
+                    
+                    <td>{{ query.cursos }}
+                    <td>{{ query.profs_adicionais }}</td>
+                    <td class="d-none .id">{{query.id}}</td>
+                    <td class="si_profs"></td>
+                    <td class="align-middle text-center" style="font-size: 2em;">
+                        <i class="bi bi-plus icone"></i>
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
-<script>
-    $(document).ready(function() {
-        $(".icone").mouseover(function() {
-            $(this).css("color", "blue");
-        });
-    
-        $(".icone").mouseout(function() {
-            $(this).css("color", "");
-        });
-    });
-</script>
