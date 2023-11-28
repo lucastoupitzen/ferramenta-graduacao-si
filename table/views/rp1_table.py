@@ -2,6 +2,7 @@ import openpyxl
 from django.shortcuts import render
 from table.models import *
 
+
 def load_rp1(request):
     if request.method == "POST":
         excel_file = request.FILES.get("excel_file", None)
@@ -33,7 +34,13 @@ def load_rp1(request):
                     cursos=row[3],
                     ano=AnoAberto.objects.get(id=1).Ano
                 )
-                print(f"{new_rp1.codigo}, {new_rp1.profs_adicionais}, {new_rp1.cursos}, {new_rp1.ano}")
+                new_rp1.save()
+                dia_semana = row[2][0:3].strip()
+                horario = row[2][4:].strip()
+                DiaAulaRP1(turma_rp1=new_rp1, dia_semana=dia_semana, horario=horario).save()
+
+                # print(f"{new_rp1.codigo}, {new_rp1.profs_adicionais}, {new_rp1.cursos}, {new_rp1.ano}")
+                #print(f"{horario}, {dia_semana}")
 
             return render(
                 request,
@@ -53,4 +60,6 @@ def load_rp1(request):
 
 
 def page_rp1(request):
-    return render(request, "table/rp1Table.html")
+    rp1_turmas = RP1Turma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano)
+
+    return render(request, "table/rp1Table.html", {"rp1": rp1_turmas})
