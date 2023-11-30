@@ -1,12 +1,13 @@
 import json
-import unicodedata
 
 import openpyxl
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
 from table.models import *
 
 
+@login_required
 def load_rp1(request):
     if request.method == "POST":
         excel_file = request.FILES.get("excel_file", None)
@@ -63,6 +64,7 @@ def load_rp1(request):
     return render(request, "table/rp1Table.html")
 
 
+@login_required
 def page_rp1(request):
     rp1_turmas = RP1Turma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano)
 
@@ -78,6 +80,7 @@ def page_rp1(request):
     return render(request, "table/rp1Table.html", context)
 
 
+@login_required
 def salvar_profs_rp1(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if not is_ajax:

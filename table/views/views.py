@@ -7,13 +7,14 @@ from openpyxl.reader.excel import load_workbook
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 import unicodedata
 from django.db.models import Count
+from django.contrib.auth.decorators import login_required
 
 from .planilha_distribuicao import *
 from .planilha_docentes import *
 from .salvar_modificacoes import *
 from .preferencias_upload import *
 
-
+@login_required
 def index(request, semestre, ano):
     # cria listas com referências diferentes
     # elas serão iteradas no index.html para carregar os dados na planilha editável
@@ -203,6 +204,7 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
     tbl[row][col + 1] = prof
 
 
+@login_required
 def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
 
@@ -272,7 +274,7 @@ def menu(request):
     }
     return render(request, "table/menu.html", context)
 
-
+@login_required
 def redirect(request):
     if request.method == "POST":
         valor_semestre = request.POST["select1"]
@@ -282,7 +284,7 @@ def redirect(request):
     else:
         return HttpResponse("fail")
 
-
+@login_required
 def save_modify(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if not is_ajax:
@@ -353,7 +355,7 @@ def save_modify(request):
 
     return JsonResponse({'erros': erros, 'alertas': alertas, 'cells_modif': ind_modif})
 
-
+@login_required
 def download_zip_planilhas(request):
     # content-type of response
     if request.method == "POST":
@@ -407,6 +409,7 @@ def planilha_distribuição_semestre(semestre, ano):
     wb.close()
 
 
+@login_required
 def pref_planilha(request):
     if request.method == "POST":
         excel_file = request.FILES.get("excel_file", None)
