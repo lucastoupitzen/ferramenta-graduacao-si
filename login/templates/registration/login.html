@@ -1,39 +1,43 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Login</title>
 </head>
-<body>
-  {% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
-  {% endif %}
 
-  {% if next %}
-    {% if user.is_authenticated %}
-      <p>Your account doesn't have access to this page. To proceed,
-      please login with an account that has access.</p>
-    {% else %}
-      <p>Please login to see this page.</p>
-    {% endif %}
-  {% endif %}
-
-  <form method="post" action="{% url 'login' %}">
+<body class="d-flex justify-content-center align-items-center vh-100">
+  <form method="post" action="{% url 'login' %}" class="border p-3 rounded">
     {% csrf_token %}
-    <table>
-      <tr>
-        <td>{{ form.username.label_tag }}</td>
-        <td>{{ form.username }}</td>
-      </tr>
-      <tr>
-        <td>{{ form.password.label_tag }}</td>
-        <td>{{ form.password }}</td>
-      </tr>
-    </table>
-    <input type="submit" value="login">
+    
+    {% if form.errors %}
+      <div class="alert alert-danger" role="alert">
+        Usuário/senha não encontrado. Por favor, tente novamente.
+      </div>
+    {% endif %}
+
+    {% if next %}
+      {% if user.is_authenticated %}
+        <div class="alert alert-danger" role="alert">
+          Sua conta não tem acesso a esta página. Para continuar, faça login com uma conta que tenha acesso.
+        </div>
+      {% else %}
+        <div class="alert alert-warning" role="alert">
+          Por favor, faça o login para acessar esta página.
+        </div>
+      {% endif %}
+    {% endif %}
+    
+    <div class="form-group">
+      <label for="{{ form.username.id_for_label }}">{{ form.username.label_tag }}</label>
+      <div class="mb-2">{{ form.username }}</div>
+    </div>
+    <div class="form-group">
+      <label for="{{ form.password.id_for_label }}">{{ form.password.label_tag }}</label>
+      <div class="mb-2">{{ form.password }}</div>
+    </div>
+    <button type="submit" value="login" class="btn btn-secondary mb-2 align-middle">Login</button>
     <input type="hidden" name="next" value="{{ next }}">
   </form>
 </body>

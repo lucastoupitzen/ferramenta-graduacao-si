@@ -30,7 +30,6 @@
 
     <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
 
-    
     <title>RP1</title>
 
 </head>
@@ -55,34 +54,42 @@
                 <input type="text" id="prof_rp3" class="form-control autocomplete campo3" placeholder="Digite o nome">
                 <p id="2" style="display:none"></p>
 
-                <input type="submit" class="btn btn-primary" id="submitForm" value="Salvar">
+                <input type="submit" class="btn btn-secondary" id="submitForm" value="Salvar">
             </div>
         </div>
-
-        <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <label for="inputFile" class="form-label">Atualizar/Planilha</label>
-            <input type="file" class="form-control" id="inputFile" name="excel_file">
-
-            <button type="submit" class="btn btn-primary">Enviar</button>
-        </form>
-
+        <div class="container mb-4">
+            <div class="row">
+                <div class="sm-4">
+                    <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+        
+                        <label for="inputFile" class="form-label">Atualizar/Planilha</label>
+                        <input type="file" class="form-control" id="inputFile" name="excel_file">
+        
+                        <button type="submit" class="btn btn-secondary">Enviar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <h4>Resolução de Problemas 1 (RP1)</h4>
         <table class="table table-bordered table-hover">
             <thead>
                 <th scope="col" class="align-middle" >TURMA</th>
                 <th scope="col" class="align-middle" >HORARIO</th>
                 <th scope="col" class="align-middle" >CURSOS</th>
                 <th scope="col" class="align-middle" >DOCENTES</th>
-                <th scope="col" class="align-middle  text-nowrap">Profs SI</th>
-                <th scope="col" class="align-middle"> Adicionar</th>
+                <th scope="col" class="align-middle  text-nowrap">PROFS. SI</th>
+                <th scope="col" class="align-middle"> EDITAR</th>
             </thead>
             <tbody>
                 {% for query in rp1%}
                 <tr>
                     
+                    {% for p in query.professor_si.all%}
+                    <td class="d-none n_completo">{{p}}</td>   
+                    {% endfor%}
+                    
                     <td>{{ query.codigo}}</td>
-
                     {% for d in query.diaaularp1_set.all%}
                     <td class="text-nowrap">{{ d.dia_semana }} {{d.horario}}</td>
                     {% endfor%}
@@ -90,9 +97,13 @@
                     <td>{{ query.cursos }}
                     <td>{{ query.profs_adicionais }}</td>
                     <td class="d-none .id">{{query.id}}</td>
-                    <td class="si_profs"></td>
+                    <td class="si_profs">
+                    {% for p in query.professor_si.all%}
+                        {{p.Apelido}},    
+                    {% endfor%}
+                    </td>
                     <td class="align-middle text-center" style="font-size: 2em;">
-                        <i class="bi bi-plus icone"></i>
+                        <i class="bi bi-pencil-square icone"></i>
                     </td>
                 </tr>
                 {%endfor%}

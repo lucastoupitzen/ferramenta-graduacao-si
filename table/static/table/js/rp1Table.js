@@ -13,6 +13,19 @@ $(document).ready(function() {
     //Abre popUp
     $(document).on('click', '.icone', function (e) {              
         const cell = $(this).closest('td');
+        const row = cell.closest('tr');
+
+        //carrega o nome no popup
+        $("#prof_rp1, #prof_rp3, #prof_rp2").val("");
+        
+        let count = 1;
+        row.find('.n_completo').each(function(){
+            const id = "#prof_rp" + count;
+            $(id).val($(this).text().trim());
+            count++;
+        });
+        count = 1;
+
         $("#popup").show();
         $("#submitForm").off("click").on("click", function(){
             controlaPopUp(cell.prev(), auto_profs);
@@ -36,7 +49,7 @@ $(document).ready(function() {
     })
 
     function controlaPopUp(cell, apelidos){
-        
+
         let resposta = {};
         const campo1Value = document.querySelector(".campo1").value;
         const campo2Value = document.querySelector(".campo2").value;
@@ -64,7 +77,7 @@ $(document).ready(function() {
 
         for (let i = 0; i < lProfs.length; i++) {
             let nomeEncontrado = false;
-            const idAlerta = "#"+i;
+            const idAlerta = "#" + i;
 
             $(idAlerta).hide()
             if (auto_profs.hasOwnProperty(lProfs[i])) nomeEncontrado = true;
@@ -103,14 +116,16 @@ $(document).ready(function() {
                     alert("Ocorreu um erro ao manipular as informações");
                 }
             });
-            console.log()
+
+            const row = cell.closest('tr');
+            row.find('.n_completo').remove();
+            lProfs.forEach(nome => {
+                row.append('<td class="d-none n_completo">'+nome+'</td>')
+            });
             $("#popup").hide();
-            cell.html(resp.join(" / "));
+            cell.html(resp.join(","));
         }
     }
-
-    let ExistProf = false;
-        
 });
 
 function getCookie(name) {
