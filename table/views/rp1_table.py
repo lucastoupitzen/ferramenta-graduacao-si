@@ -86,16 +86,5 @@ def salvar_profs_rp1(request):
         return JsonResponse({'status': 'Invalid request'}, status=400)
 
     data = json.load(request)
-    tur = RP1Turma.objects.get(id=data["id"])
-    tur.professor_si.clear()
-    for prof in data["lProfs"]:
-        if not prof:
-            continue
-        prof_bd = Professor.objects.get(NomeProf=prof)
-        try:
-            tur.professor_si.add(prof_bd)
-        except Exception as e:
-            print(e)
-            pass
-
+    print(data)
     return JsonResponse({})
