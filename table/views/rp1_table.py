@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
 from table.models import *
+from django.shortcuts import redirect
 
 
 @login_required
@@ -13,18 +14,10 @@ def load_rp1(request):
         excel_file = request.FILES.get("excel_file", None)
 
         if not excel_file:
-            return render(
-                request, "table/rp1Table.html", {"error_message": "Nenhum arquivo enviado."}
-            )
+            return redirect("page_rp1")
 
         if not excel_file.name.endswith(".xlsx"):
-            return render(
-                request,
-                "table/rp1Table.html",
-                {
-                    "error_message": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx."
-                },
-            )
+            return redirect("page_rp1")
 
         try:
             workbook = openpyxl.load_workbook(excel_file)
@@ -47,11 +40,7 @@ def load_rp1(request):
                 # print(f"{new_rp1.codigo}, {new_rp1.profs_adicionais}, {new_rp1.cursos}, {new_rp1.ano}")
                 #print(f"{horario}, {dia_semana}")
 
-            return render(
-                request,
-                "table/rp1Table.html",
-                {"success_message": "Dados de preferência salvos com sucesso."},
-            )
+            return redirect("page_rp1")
 
         except Exception as e:
             print(e)
