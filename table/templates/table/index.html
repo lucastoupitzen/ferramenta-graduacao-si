@@ -161,7 +161,6 @@
         
         <hr>
         
-
         <h4>Tabela para inserção de obrigatórias + extras vespertino</h4>
         {% if anoAberto == ano%}
         <table class="table table-bordered font-weight-bold editable" id="tbl1">
@@ -253,7 +252,7 @@
         </table>
 
   
-        {% if ano == AnoAberto%}
+        {% if anoAberto == ano%}
         {% if not semestre == 7 and not semestre == 8%}
         <div class="container mt-3">
             <h6>Preferências para o {{semestre}}º semestre (as linhas 1,2,3 são as prioridades)</h6>

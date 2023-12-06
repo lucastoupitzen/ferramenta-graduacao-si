@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Login</title>
+</head>
+
+<body class="d-flex justify-content-center align-items-center vh-100">
+  <form method="post" action="{% url 'login' %}" class="border p-3 rounded">
+    {% csrf_token %}
+    
+    {% if form.errors %}
+      <div class="alert alert-danger" role="alert">
+        Usuário/senha não encontrado. Por favor, tente novamente.
+      </div>
+    {% endif %}
+
+    {% if next %}
+      {% if user.is_authenticated %}
+        <div class="alert alert-danger" role="alert">
+          Sua conta não tem acesso a esta página. Para continuar, faça login com uma conta que tenha acesso.
+        </div>
+      {% else %}
+        <div class="alert alert-warning" role="alert">
+          Por favor, faça o login para acessar esta página.
+        </div>
+      {% endif %}
+    {% endif %}
+    
+    <div class="form-group">
+      <label for="{{ form.username.id_for_label }}">{{ form.username.label_tag }}</label>
+      <div class="mb-2" id="{{ form.username.id_for_label }}">{{ form.username }}</div>
+    </div>
+    <div class="form-group">
+      <label for="{{ form.password.id_for_label }}">{{ form.password.label_tag }}</label>
+      <div class="mb-2" id="{{ form.password.id_for_label }}">{{ form.password }}</div>
+    </div>
+    <button type="submit" value="login" class="btn btn-secondary mb-2 align-middle">Login</button>
+    <input type="hidden" name="next" value="{{ next }}">
+  </form>
+</body>
+</html>
+
