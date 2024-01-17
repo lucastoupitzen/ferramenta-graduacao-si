@@ -13,6 +13,7 @@ urlpatterns = [
     path("", views.menu, name="menupage"),
     path("load_rp1", rp1_table.load_rp1, name="load_rp1"),
     path("page_rp1", rp1_table.page_rp1, name="page_rp1"),
+    path('page_rp1/<str:text>/', rp1_table.page_rp1, name='page_rp1'),
     path("redirect", views.redirect, name="redirect"),
     path("process_file", views.pref_planilha, name="process_file"),
     #path("login/", include("django.contrib.auth.urls")),

@@ -218,10 +218,11 @@ def menu(request):
     dict_incompletas = {}
 
     for disc in discs_incompletas:
-        turmas = disc.turma_set.filter(Eextra="N").exclude(CoDisc__CoDisc="ACH0041")
+        turmas = disc.turma_set.filter(Eextra="N", Ano=ano).exclude(CoDisc__CoDisc="ACH0041")
         turmas_obrig = [2, 4, 94]
         if turmas:
             for tur in turmas:
+                print(tur.CodTurma)
                 turmas_obrig.remove(tur.CodTurma)
 
         formatted_turmas = [f"{num:02d}" for num in turmas_obrig]

@@ -121,7 +121,7 @@ class DiaAulaRP1(models.Model):
     dia_semana = models.CharField(max_length=3, choices=dias, default=None)
     horarios = [
         ("08h - 12h", "08h - 12h"),
-        ("14h – 18h", "14h – 18h"),
+        ("14h – 18h", "14h - 18h"),
         ("19h - 22h45", "19h - 22h45"),
     ]
     horario = models.CharField(default=None, max_length=20, choices=horarios)
@@ -146,8 +146,10 @@ class Turmas_RP(models.Model):
 class MtvRestricao(models.Model):
     mtv = models.CharField(max_length=500, default="")
 
+
 class AnoAberto(models.Model):
     Ano = models.DecimalField(max_digits=4, decimal_places=0, default=2022)
+
 
 class Restricao(models.Model):
     PERIODO_CHOICES = (
