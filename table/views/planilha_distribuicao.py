@@ -3,11 +3,11 @@ from datetime import datetime
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 
 
-def planilha_extra(sheet):
+def planilha_extra(sheet, ano):
     # Filtra as turmas do semestre desejado, trazendo os dados necessários e ordenando-os.
     turmas_queryset = (
         Turma.objects.filter(
-            Ano=datetime.now().year,
+            Ano=ano,
             Eextra="S",
         )
         .prefetch_related("dia_set", "CoDisc")
@@ -18,13 +18,13 @@ def planilha_extra(sheet):
     escreve_excel(turmas_queryset, sheet, True, row)
 
 
-def planilha_si(sheet_si, smt):
+def planilha_si(sheet_si, smt, ano):
     semestre_geral = [1, 3, 5, 7] if smt == "impar" else [2, 4, 6, 8]
 
     # Filtra as turmas do semestre desejado, trazendo os dados necessários e ordenando-os.
     turmas_queryset = (
         Turma.objects.filter(
-            Ano=datetime.now().year,
+            Ano=ano,
             CoDisc__SemestreIdeal__in=semestre_geral,
             Eextra="N",
         )

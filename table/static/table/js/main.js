@@ -432,7 +432,7 @@ const editable = {
 
     removeEditable: (selected, isCod, valueUser, v_nextCell, v_prevCell) =>{
 
-        // Impede o usuário de deixar um par imcompleto
+        // Impede o usuário de deixar um par incompleto
 
         let v_cell_lado;
         let cell_lado;
@@ -444,10 +444,7 @@ const editable = {
             cell_lado = $(selected).prev();   
         }
 
-       
-        if(!listaCB.includes(cell_lado[0].innerText)) {
-            $(v_cell_lado).html("A definir")
-        } else if(valueUser == "" && v_cell_lado != "") $(cell_lado).html("")
+        if(valueUser == "" && v_cell_lado != "") $(cell_lado).html("")
 
         // REMOVE "EDITABLE"
         window.getSelection().removeAllRanges(); 

@@ -102,7 +102,34 @@ class Dia(models.Model):
 
     def __str__(self):
         return f"{self.get_DiaSemana_display()}/{self.get_Horario_display()}"
-    
+
+
+class RP1Turma(models.Model):
+    professor_si = models.ManyToManyField(Professor)
+    codigo = models.IntegerField()
+    profs_adicionais = models.CharField(max_length=300, default=None, null=True, blank=True)
+    cursos = models.CharField(max_length=300, default=None, null=True, blank=True)
+    ano = models.DecimalField(max_digits=4, decimal_places=0)
+
+    class Meta:
+        unique_together = (("codigo", "cursos", "profs_adicionais", "ano"),)
+
+
+class DiaAulaRP1(models.Model):
+    turma_rp1 = models.ForeignKey(RP1Turma, on_delete=models.CASCADE)
+    dias = [("Seg", "Seg"), ("Ter", "Ter"), ("Qua", "Qua"), ("Qui", "Qui"), ("Sex", "Sex")]
+    dia_semana = models.CharField(max_length=3, choices=dias, default=None)
+    horarios = [
+        ("08h - 12h", "08h - 12h"),
+        ("14h – 18h", "14h - 18h"),
+        ("19h - 22h45", "19h - 22h45"),
+    ]
+    horario = models.CharField(default=None, max_length=20, choices=horarios)
+
+    class Meta:
+        unique_together = (("turma_rp1", "dia_semana", "horario"),)
+
+
 class Turmas_RP(models.Model):
 
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
@@ -116,9 +143,12 @@ class Turmas_RP(models.Model):
         return "0" + str(self.turma) + "/" + str(self.professor)
 
 
-
 class MtvRestricao(models.Model):
     mtv = models.CharField(max_length=500, default="")
+
+
+class AnoAberto(models.Model):
+    Ano = models.DecimalField(max_digits=4, decimal_places=0, default=2022)
 
 
 class Restricao(models.Model):

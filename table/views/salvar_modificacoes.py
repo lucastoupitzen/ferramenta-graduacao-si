@@ -1,3 +1,5 @@
+from django.db.utils import IntegrityError
+
 from table.models import *
 from django.db.models import Q
 
@@ -14,6 +16,7 @@ def update_prof(inf, year, smt):
     turma_db.NroUSP = prof
     turma_db.save()
     return turma_db
+
 
 def update_prof_RP(inf, year, smt):
     smt_ano = "I" if smt % 2 else "P"
@@ -66,6 +69,7 @@ def deletar_valor(data, year, erros):
     except:
         erros["delecao"] = "Erro ao deletar par de células\n"
 
+
 def deletar_valor_RP(data, year, erros):
     # Iterar sobre as turmas do banco de dados e excluir aquelas que não estão em tbl_user
     infos_user = data["info"]
@@ -86,6 +90,7 @@ def deletar_valor_RP(data, year, erros):
 
     except:
         return
+
 
 def cadastrar_turma_RP(turma, ano, smt):
 
@@ -133,8 +138,6 @@ def cadastrar_turma_RP(turma, ano, smt):
     
     return nova_turma
 
-    
-
 
 def cadastrar_turma(turma, ano, smt):
     extra = "N"
@@ -142,21 +145,20 @@ def cadastrar_turma(turma, ano, smt):
         extra = "S"
 
     smt_ano = "I" if smt % 2 else "P"
-
-    nova_turma = Turma.objects.create(
-        CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
-        CodTurma=turma["cod_turma"],
-        Ano=ano,
-        NroUSP=Professor.objects.get(Apelido=turma["professor"]),
-        Eextra=extra,
-        SemestreAno=smt_ano
-    )
     try:
+        nova_turma = Turma.objects.create(
+            CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
+            CodTurma=turma["cod_turma"],
+            Ano=ano,
+            NroUSP=Professor.objects.get(Apelido=turma["professor"]),
+            Eextra=extra,
+            SemestreAno=smt_ano
+        )
         nova_turma.save()
         return nova_turma
-    except:
+    except IntegrityError:
         return False
-        
+
 
 def cadastrar_dia(turma_db, turma_user):
     dia_materia = Dia(DiaSemana=turma_user["dia"], Horario=turma_user["horario"])

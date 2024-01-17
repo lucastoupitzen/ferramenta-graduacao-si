@@ -73,9 +73,13 @@
             </div>
         </div>
         <div id="url-data" data-url="{% url 'save_modify' %}"></div>
-
+        
         <h4>Tabela para inserção de turmas extras</h4>
+        {% if anoAberto == ano%}
         <table class="table table-bordered editable" id="tbl_ext">
+        {% else %}
+        <table class="table table-bordered" id="tbl_ext">
+        {% endif %}
             <thead>
                 <tr class="table-secondary">
                     <th scope="col"></th>
@@ -138,8 +142,7 @@
             </div>
         </div>
 
-
-
+        {% if anoAberto == ano%}
         <div class="container">
             <div class="row">
                 <div class="col-sm-6">
@@ -154,12 +157,16 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         
         <hr>
         
-
         <h4>Tabela para inserção de obrigatórias + extras vespertino</h4>
+        {% if anoAberto == ano%}
         <table class="table table-bordered font-weight-bold editable" id="tbl1">
+        {% else %}
+        <table class="table table-bordered font-weight-bold" id="tbl1">
+        {% endif %}    
             <thead>
                 <tr class="table-secondary">
                     <th scope="col"></th>
@@ -245,7 +252,7 @@
         </table>
 
   
-        
+        {% if anoAberto == ano%}
         {% if not semestre == 7 and not semestre == 8%}
         <div class="container mt-3">
             <h6>Preferências para o {{semestre}}º semestre (as linhas 1,2,3 são as prioridades)</h6>
@@ -272,6 +279,7 @@
         </div>
         {%endif%}
         
+        
         <div class="container">
             <div class="row">
                 <div class="col-sm-6">
@@ -286,6 +294,7 @@
                 </div>
             </div>
         </div>
+        
     
         <div class="container" style="display:none" id="infos_prof">
             <div class="row">
@@ -322,7 +331,7 @@
             </div>
             <br>         
         </div>
-
+        {%endif%}
         <div class="container">
             <div class="row">
                 <div class="col-sm">
@@ -349,6 +358,7 @@
                             </table>
                             {%endif%} 
                         {% endfor %}
+            
                         <a type="button" class="btn btn-secondary" href="{% url 'menupage' %}">Voltar Menu</a>
                     </div>
                 </div>
