@@ -295,7 +295,10 @@ def save_modify(request):
 
     data = json.load(request)
     info_par = data["info"]
+    print("Aqui está o info_par")
     print(info_par)
+    print("Aqui está o data")
+    print(data)
     ano = AnoAberto.objects.get(id=1).Ano
 
     erros = {}
