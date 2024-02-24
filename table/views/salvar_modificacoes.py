@@ -7,7 +7,7 @@ from django.db.models import Q
 def update_prof(inf, year, smt):
     smt_ano = "I" if smt % 2 else "P"
     extra = "N"
-    if inf["extra"]:
+    if inf["extra"] or inf["horario"] in (2, 4):
         extra = "S"
 
     turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
@@ -21,7 +21,7 @@ def update_prof(inf, year, smt):
 def update_prof_RP(inf, year, smt):
     smt_ano = "I" if smt % 2 else "P"
     extra = "N"
-    if inf["extra"]:
+    if inf["extra"] or turma["horario"] in (2, 4):
         extra = "S"
 
     turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
@@ -152,7 +152,8 @@ def cadastrar_turma(turma, ano, smt):
             Ano=ano,
             NroUSP=Professor.objects.get(Apelido=turma["professor"]),
             Eextra=extra,
-            SemestreAno=smt_ano
+            SemestreAno=smt_ano,
+            semestre_extra=smt
         )
         nova_turma.save()
         return nova_turma
@@ -170,7 +171,7 @@ def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
     smt_ano = "I" if smt % 2 else "P"
 
     extra = "N"
-    if turma["extra"]:
+    if turma["extra"] or turma["horario"] in (2, 4):
         extra = "S"
 
     if not turma_db:
@@ -203,7 +204,7 @@ def extrapola_creditos(turma_db):
 #Essa implementação não leva em conta turma extra
 # precisará adicionada a parte que considera 
 # quando o sistema permitir turma extra noite e manhã 
-def aula_manha_noite(data, alertas):
+def aula_manha_noite(data, alertas, ano):
     inf = data["info"]
     # lista das linhas que representam a manhã e noite
     if inf["horario"] not in [0,1,5,7]: return False
@@ -219,7 +220,8 @@ def aula_manha_noite(data, alertas):
 
             manha_noite = Dia.objects.filter(DiaSemana=inf["dia"], Horario__in=horario,
                                                 Turmas__NroUSP__Apelido=inf["professor"],
-                                                Turmas__CoDisc__SemestreIdeal=semestre)
+                                                Turmas__CoDisc__SemestreIdeal=semestre,
+                                                Turmas__Ano=ano)
             
             if manha_noite: break
 
@@ -231,7 +233,7 @@ def aula_manha_noite(data, alertas):
     
 
 #a mesma observação da função imediatamente acima vale para essa
-def aula_noite_outro_dia_manha(data, alertas):
+def aula_noite_outro_dia_manha(data, alertas, ano):
     inf = data["info"]
     
     # o horário precisa ser do matutino 1 e diferente de segunda-feira
@@ -242,8 +244,7 @@ def aula_noite_outro_dia_manha(data, alertas):
         #que é segunda noturno 2
         if not (inf["horario"] == 7 and inf["dia"] == 0):
             return False
-    
-    
+
     # Um dicionário para evitar mais uma consulta
     dias = {0: "segunda", 2: "terça", 4: "quarta", 6: "quinta", 8: "sexta"}
 
@@ -258,7 +259,8 @@ def aula_noite_outro_dia_manha(data, alertas):
     for semestre in semestres_testados:
         dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,
                                     Turmas__NroUSP__Apelido=inf["professor"],
-                                    Turmas__CoDisc__SemestreIdeal=semestre)
+                                    Turmas__CoDisc__SemestreIdeal=semestre,
+                                    Turmas__Ano=ano)
         if dia_alerta: break
     
     if dia_alerta:
@@ -331,3 +333,4 @@ def indice_tbl_update(turma_obj, ind_modif, info_par):
             "col": int(dia.DiaSemana),
             "new_value": turma_obj.NroUSP.Apelido
         })
+

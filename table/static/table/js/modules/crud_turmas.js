@@ -25,11 +25,10 @@ const save_edition = {
         
         //No models a linha da tabela corresponde a um horário  
         if (row === 1 || row === 2) row--; // 10:15 - 12:00h e 8:00 - 10:15
-        
+
         if(vl["extra"]){
             if(row == 4) row = 5
             else if(row == 5) row = 7
-
         }else{
             if(row === 5) lastCellContent = 33;
 
@@ -37,10 +36,9 @@ const save_edition = {
             else if (row === 6) row = 4; //16:15-18:00h
             else if (row === 8 || row === 9) row = 5; //19:00 - 20:45h
             else if (row === 10 || row === 11) row = 7; //21:00 - 22:45h
-            
-            
 
         }
+
         if(vUsercod == "ACH0042 RP2") {
             const nomesSeparados = vUserProf.split(" / ");
             vl["ant_prof"] = "A definir";
