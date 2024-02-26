@@ -262,6 +262,7 @@ $(document).ready(function () {
         let is_ext = true;
         const table = $(this).closest('table'); 
         const id = table.attr('id'); 
+
         if(id === "tbl1"){
             is_ext = false;
             const specialRows = [5, 9, 11];
@@ -269,8 +270,7 @@ $(document).ready(function () {
         }
                    
         //coluna das turmas não deve ser editável
-        if(colIndex == 11) return
-       
+        if(colIndex === 11) return
 
         // Verifica se o alvo do clique é o ícone
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex, is_ext);
@@ -344,6 +344,7 @@ const editable = {
             impedimento = false;
         }
 
+        $(cell).closest('table').find('i').remove();
         editable.previousValue = $(cell).html().replace(/&nbsp;/g, '').trim();
         editable.rowIndex = row;
         editable.colIndex = col;

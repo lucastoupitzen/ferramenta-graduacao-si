@@ -69,6 +69,7 @@ class Turma(models.Model):
     NroUSP = models.ForeignKey(Professor, on_delete=models.CASCADE)
     NroAlunos = models.IntegerField(null=True, blank=True)
     Eextra = models.CharField(max_length=1, choices=[("S", "Sim"), ("N", "Não")])
+    semestre_extra = models.DecimalField(max_digits=1, decimal_places=0, default=0)
     SemestreAno = models.CharField(default="P", max_length=1, choices=[("P", "par"), ("I", "impar")])
 
     class Meta:

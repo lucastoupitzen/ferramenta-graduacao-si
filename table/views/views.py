@@ -26,10 +26,9 @@ def index(request, semestre, ano):
     query_smt = [7, 8] if semestre in [7, 8] else [semestre]
     smt_ano = "I" if semestre % 2 else "P"
     vls_turmas = Turma.objects.filter(
-        Q(CoDisc__SemestreIdeal__in=query_smt, Ano=ano, SemestreAno=smt_ano) |
-        Q(Ano=ano, Eextra="S", SemestreAno=smt_ano)
+        Q(CoDisc__SemestreIdeal__in=query_smt, Ano=ano, SemestreAno=smt_ano, Eextra="N") |
+        Q(Ano=ano, Eextra="S", SemestreAno=smt_ano, semestre_extra=semestre)
     )
-
     turmas_rp_db = Turmas_RP.objects.all()
 
     for tur_materia in vls_turmas:
@@ -203,7 +202,6 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
     ] = f"{str(cod_disc.CoDisc)} {str(cod_disc.Abreviacao)}"
     tbl[row][col + 1] = prof
 
-
 @login_required
 def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
@@ -313,8 +311,8 @@ def save_modify(request):
         # caso de RP
         if info_par["cod_disc"] == "ACH0042":
 
-            aula_manha_noite(data, alertas)
-            aula_noite_outro_dia_manha(data, alertas)
+            aula_manha_noite(data, alertas, ano)
+            aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(info_par, ano, data, erros):
             
@@ -323,9 +321,9 @@ def save_modify(request):
                 atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
                 
         else:
-            #ano aq
-            aula_manha_noite(data, alertas)
-            aula_noite_outro_dia_manha(data, alertas)
+
+            aula_manha_noite(data, alertas, ano)
+            aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(info_par, ano, data, erros):
             
@@ -336,14 +334,14 @@ def save_modify(request):
     elif info_par["tipo"] == "u":
 
         if "ant_prof" in info_par:
-            aula_manha_noite(data, alertas)
-            aula_noite_outro_dia_manha(data, alertas)
+            aula_manha_noite(data, alertas, ano)
+            aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(info_par, ano, data, erros):
                 if info_par["cod_disc"] == "ACH0042":
                     deletar_valor_RP(data, ano, erros)
-                    aula_manha_noite(data, alertas)
-                    aula_noite_outro_dia_manha(data, alertas)
+                    aula_manha_noite(data, alertas, ano)
+                    aula_noite_outro_dia_manha(data, alertas, ano)
 
                     if not aula_msm_horario(info_par, ano, data, erros):
                     

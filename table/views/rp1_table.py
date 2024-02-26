@@ -32,9 +32,11 @@ def load_rp1(request):
     RP1Turma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano).delete()
     turmas_erro = ""
 
+    dias_validos = ("seg", "ter", "qua", "qui", "sex")
+    hrs_validos = ("08h - 12h", "14h - 18h", "19h - 22h45")
+
     for row in worksheet.iter_rows(min_row=3, max_col=5, values_only=True):
-        dias_validos = ("seg", "ter", "qua", "qui", "sex")
-        hrs_validos = ("08h - 12h", "14h - 18h", "19h - 22h45")
+
         dia_semana = row[2][0:3].strip()
         horario = row[2][4:].strip().lower()
 
