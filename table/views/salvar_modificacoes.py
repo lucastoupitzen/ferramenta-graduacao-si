@@ -211,25 +211,61 @@ def aula_manha_noite(data, alertas, ano):
     
     horario = (0, 1) if inf["horario"] in [5,7] else (5,7)
 
+
     if data["semestre"] % 2 == 0:
             semestres_testados = [2,4,6,8]
     else:
-            semestres_testados = [1,3,5,7]
-        
+            semestres_testados = [1,3,5,7] 
+    professor = Professor.objects.get(Apelido = inf["professor"])
+
+    manha_noite_rp1 = False
     for semestre in semestres_testados:
 
-            manha_noite = Dia.objects.filter(DiaSemana=inf["dia"], Horario__in=horario,
+            manha_noite = Dia.objects.filter(DiaSemana= inf["dia"], Horario__in = horario,
                                                 Turmas__NroUSP__Apelido=inf["professor"],
                                                 Turmas__CoDisc__SemestreIdeal=semestre,
                                                 Turmas__Ano=ano)
             
             if manha_noite: break
 
+            try:
+                # adaptações necessárias para conferência do caso de rp1
+                corresp_dias_semana = {
+                        "Seg": 0,
+                        "Ter": 2,
+                        "Qua": 4,
+                        "Qui": 6,
+                        "Sex": 8
+                    }
+                for chave, valor in corresp_dias_semana.items():
+                    if valor == inf["dia"]:
+                        dia = chave  
+
+                corresp_horarios = {
+                        "08h - 12h": [0,1],
+                        "14h - 18h": [2,4],
+                        "19h - 22h45": [5,7]
+                    }        
+                for chave, valor in corresp_horarios.items():
+                    if horario in valor:
+                        horario_rp = chave  
+     
+                turma_rp1_prof = RP1Turma.objects.get(professor_si = professor)
+                try: 
+                    manha_noite_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, dia_semana = dia, horario = horario_rp)
+                    if manha_noite_rp1: break
+                except: pass
+            except: pass
 
     if manha_noite:
         dia = manha_noite.first().get_DiaSemana_display().lower()
         alertas["aula_manha_noite"] = (f"Professor(a) {inf['professor']} vai "
                                        f"estar dando aula de manhã e a noite na {dia}.\n")
+        return
+    if manha_noite_rp1:
+        alertas["aula_manha_noite"] = (f"Professor(a) {inf['professor']} vai "
+                                       f"estar dando aula de manhã e a noite na {dia}.\n")
+        return
     
 
 #a mesma observação da função imediatamente acima vale para essa
@@ -256,15 +292,47 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
     else:
         semestres_testados = [1,3,5,7]
 
-    smt_conflito = ""
+
+    professor = Professor.objects.get(Apelido = inf["professor"])
+    dia_alerta_rp1 = False
+
     for semestre in semestres_testados:
         dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,
                                     Turmas__NroUSP__Apelido=inf["professor"],
                                     Turmas__CoDisc__SemestreIdeal=semestre,
                                     Turmas__Ano=ano)
-        if dia_alerta:
-            smt_conflito = semestre
-            break
+
+        if dia_alerta: break
+
+        try:
+            # adaptações necessárias para conferência do caso de rp1
+            corresp_dias_semana = {
+                    "Seg": 0,
+                    "Ter": 2,
+                    "Qua": 4,
+                    "Qui": 6,
+                    "Sex": 8
+                }
+            for chave, valor in corresp_dias_semana.items():
+                if valor == ind_lado_dia:
+                    dia = chave  
+
+            corresp_horarios = {
+                    "08h - 12h": [0,1],
+                    "14h - 18h": [2,4],
+                    "19h - 22h45": [5,7]
+                }        
+            for chave, valor in corresp_horarios.items():
+                if hr in valor:
+                    horario = chave  
+    
+            turma_rp1_prof = RP1Turma.objects.get(professor_si = professor)
+            try: 
+                dia_alerta_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, dia_semana = dia, horario = horario)
+                if dia_alerta_rp1: break
+            except: pass
+        except: pass
+
 
     
     if dia_alerta:
@@ -277,7 +345,20 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
             dia_lado = aux
 
         alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
-                          f"aula na noite de {dia_lado} do semestre {smt_conflito} e de manhã na {dia}.\n")
+
+                          f"aula na noite de {dia_lado} e de manhã na {dia}\n")
+        
+    if dia_alerta_rp1:
+        dia_lado = dias[inf['dia']]
+        
+        if inf["horario"] == 0:
+            aux = dia
+            dia = dia_lado
+            dia_lado = aux
+
+        alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
+                          f"aula na noite de {dia_lado} e de manhã na {dia}\n")
+
     
 
 def aula_msm_horario(inf, ano, data, erros):
@@ -290,8 +371,8 @@ def aula_msm_horario(inf, ano, data, erros):
     conflito_hr = False
     aux = False
     for t in turma_prof:
-        if t.CoDisc.SemestreIdeal == smt:
-            continue
+        # if t.CoDisc.SemestreIdeal == smt:
+        #     continue
 
         conflito_hr = t.dia_set.filter(DiaSemana=inf["dia"], Horario=inf["horario"])
         if conflito_hr:
@@ -311,6 +392,45 @@ def aula_msm_horario(inf, ano, data, erros):
         )
         erros["prof_msm_hr"] = msg
         return True
+    
+    if inf["cod_disc"] != "ACH0041":
+    
+        conflito_hr_rp1 = False
+        try:
+                # adaptações necessárias para conferência do caso de rp1
+                corresp_dias_semana = {
+                        "Seg": 0,
+                        "Ter": 2,
+                        "Qua": 4,
+                        "Qui": 6,
+                        "Sex": 8
+                    }
+                for chave, valor in corresp_dias_semana.items():
+                    if valor == inf["dia"]:
+                        dia = chave  
+
+                corresp_horarios = {
+                        "08h - 12h": [0,1],
+                        "14h - 18h": [2,4],
+                        "19h - 22h45": [5,7]
+                    }        
+                for chave, valor in corresp_horarios.items():
+                    if inf["horario"] in valor:
+                        horario = chave  
+        
+                turma_rp1_prof = RP1Turma.objects.get(professor_si = prof)
+                try: 
+                    conflito_hr_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, dia_semana = dia, horario = horario)
+                except: pass
+        except: pass
+
+        if conflito_hr_rp1:
+            msg = (
+                f"Conflito na matéria RP1 {str(conflito_hr_rp1.first())}"
+                f" do professor(a) {inf['professor']}"
+            )
+            erros["prof_msm_hr"] = msg
+            return True
 
 
 def indice_tbl_update(turma_obj, ind_modif, info_par):

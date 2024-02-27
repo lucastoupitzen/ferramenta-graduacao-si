@@ -1,6 +1,14 @@
 
 const auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
 
+function openModal(title, messages) {
+    const modalBody = document.getElementById("modalBody");
+    modalBody.innerText = messages;
+    $("#myModalLabel").html(title);
+    const myModal = new bootstrap.Modal(document.getElementById("myModal"));
+    myModal.show();
+}
+
 $(document).ready(function() {
     $(".icone").mouseover(function() {
         $(this).css("color", "blue");
@@ -99,7 +107,6 @@ $(document).ready(function() {
                 lProfs: lProfs,
                 csrfmiddlewaretoken: window.CSRF_TOKEN
             };
-    
             $.ajax({
                 url: $("#url-data").data("url"),
                 type: "POST",
@@ -110,7 +117,39 @@ $(document).ready(function() {
                   "X-CSRFToken": getCookie("csrftoken"), 
                 },
                 success: (data) => {
-                    
+                    const erros = data["erros"]
+                    const alertas = data["alertas"]
+                    const cred_err = erros.hasOwnProperty("credito")
+                    const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
+                    if(prof_hr_err){
+                        openModal("ERRO", erros["prof_msm_hr"]);
+                        $('#myModal').on('hidden.bs.modal', function () {
+                            editable.edit(cell.get(0), row, col, content["extra"]);
+                            return;
+                        });
+                    }
+                    else if(cred_err) {
+                        openModal("ERRO", erros["credito"]);
+                        $('#myModal').on('hidden.bs.modal', function () {
+                            editable.edit(cell_cod, row, col, content["extra"]);
+                            return;
+                        });       
+                    }
+                    else if(Object.keys(alertas).length !== 0){
+
+                        let alerta_msg = "";
+    
+                        if(alertas.hasOwnProperty("aula_manha_noite")){
+                            alerta_msg += alertas["aula_manha_noite"]
+                        }
+    
+                        if(alertas.hasOwnProperty("alert2")){
+                            //Alerta de quando um msm professor dá aula no noturno 2
+                            // e no matutino 1 no dia posterior
+                            alerta_msg += alertas["alert2"]
+                        }
+                        openModal("Warning(s)", alerta_msg);
+                    }
                 },
                 error: (error) => {
                     alert("Ocorreu um erro ao manipular as informações");

@@ -7,6 +7,11 @@ from django.shortcuts import render
 from table.models import *
 from django.shortcuts import redirect
 
+from .planilha_distribuicao import *
+from .planilha_docentes import *
+from .salvar_modificacoes import *
+from .preferencias_upload import *
+
 
 @login_required
 def load_rp1(request):
@@ -82,16 +87,53 @@ def salvar_profs_rp1(request):
         return JsonResponse({'status': 'Invalid request'}, status=400)
 
     data = json.load(request)
+    erros = {}
+    alertas = {}
+    ind_modif = []
+    ano = AnoAberto.objects.get(id=1).Ano
     tur = RP1Turma.objects.get(id=data["id"])
     tur.professor_si.clear()
     for prof in data["lProfs"]:
         if not prof:
             continue
+        dia_aula_rp1 = DiaAulaRP1.objects.get(turma_rp1 = tur)
+        # devemos adaptaros horarios e dias para serem compatíveis com as restrições
+        # dicionário de correspondencia dos dias da semana
+        corresp_dias_semana = {
+            "Seg": 0,
+            "Ter": 2,
+            "Qua": 4,
+            "Qui": 6,
+            "Sex": 8
+        }
+        # dicionário de correspondencia de horário
+        corresp_horarios = {
+            "08h - 12h": [0,1],
+            "14h - 18h": [2,4],
+            "19h - 22h45": [5,7]
+        }        
         prof_bd = Professor.objects.get(NomeProf=prof)
-        try:
-            tur.professor_si.add(prof_bd)
-        except Exception as e:
-            print(e)
-            pass
+        print(corresp_horarios[dia_aula_rp1.horario])
+        for horario in  corresp_horarios[dia_aula_rp1.horario]:
+            data = {
+                "info": {
+                    'cod_disc': 'ACH0041',
+                    'professor': prof_bd.Apelido,
+                    'horario': horario, 
+                    'dia': corresp_dias_semana[dia_aula_rp1.dia_semana], 
+                    'extra': False,
+                    "cod_turma": 0
+                },
+                "semestre": 1
+            }
+            aula_manha_noite(data, alertas, ano)
+            aula_noite_outro_dia_manha(data, alertas, ano)
 
-    return JsonResponse({})
+            if not aula_msm_horario(data["info"], ano, data, erros):
+                try:
+                    tur.professor_si.add(prof_bd)
+                except Exception as e:
+                    print("erroooo")
+    print(erros)
+    print(alertas)
+    return JsonResponse({'erros': erros, 'alertas': alertas})

@@ -416,17 +416,20 @@ const editable = {
         // (C4) PRESS ENTER/ESC OR CLICK OUTSIDE TO END EDIT
         // A ideia do ESC é recuperar o valor de antes do usuário modificar
         // ainda falta implementar
-        if($(cell).prev()[0].innerText == "ACH0042 RP2") {
-            $("#submitForm").on("click", editable.close);
-        } 
-        else {
-            window.addEventListener("click", editable.close);
-            cell.onkeydown = evt => {
-                if (evt.key=="Enter" || evt.key=="Escape") {
-                    editable.close(evt.key=="Enter" ? true : false);
-                    return false;
-                }
-            };
+        if($(cell).prev()[0]){
+            
+            if($(cell).prev()[0].innerText == "ACH0042 RP2") {
+                $("#submitForm").on("click", editable.close);
+            } 
+            else {
+                window.addEventListener("click", editable.close);
+                cell.onkeydown = evt => {
+                    if (evt.key=="Enter" || evt.key=="Escape") {
+                        editable.close(evt.key=="Enter" ? true : false);
+                        return false;
+                    }
+                };
+            }
         }
         
 

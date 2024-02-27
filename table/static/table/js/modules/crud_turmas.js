@@ -83,7 +83,6 @@ const save_edition = {
             semestre: semestre,
             csrfmiddlewaretoken: window.CSRF_TOKEN
         };
-
         $.ajax({
             url: $("#url-data").data("url"),
             type: "POST",
@@ -94,7 +93,6 @@ const save_edition = {
               "X-CSRFToken": getCookie("csrftoken"), 
             },
             success: (data) => {
-                console.log($("#url-data").data("url"))
                 const erros = data["erros"]
                 const alertas = data["alertas"]
                 const cells_prof_modif = data["cells_modif"]

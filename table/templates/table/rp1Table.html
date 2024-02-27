@@ -20,13 +20,13 @@
 
     <!-- Ícone -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-
+   
     {%load static %}
     <script type="module" src="{% static 'table/js/rp1Table.js' %}"></script>
     {{ auto_profs|json_script:"auto_profs"}}
     
     <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
-
+    <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
     <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
 
     <title>RP1</title>
@@ -34,6 +34,31 @@
 </head>
 
 <body>
+    <header class="navbar navbar-expand-lg navbar-light headerusp">
+        <!-- Canto Esquerdo - Logotipo ou Imagem -->
+        <div class="navbar-brand logo" href="#">
+            <img src="{% static 'images/logotipo.png'%}" alt="Logo"  class="d-inline-block align-top">
+        </div>
+
+        <!-- Canto Direito - Barra de Navegação -->
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item ">
+                    <p class="nav-link text-light">Ano válido: {{anoAberto}}</p>
+                </li>
+                <li class="nav-item">
+                    <p class="nav-link text-light" id="nrousp">{{ request.user }}</p>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Ajuda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Sair</a>
+                </li>
+                
+            </ul>
+        </div>
+    </header>
     {%if text_erro%}
     <script>
         $(document).ready(function () {
@@ -42,8 +67,25 @@
     </script>
     {%endif%}
     
-
+    
     <div style="width:90%; font-size: 12px;" class="mx-auto">
+        <br>
+        <h4>Carregar planilha de atribuição de RP1</h4>
+        <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel"></h5>
+                </div>
+                <div class="modal-body" id="modalBody">
+                <!-- Aqui será exibido o conteúdo das mensagens -->
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+            </div>
+        </div>
         
         <div class="modal fade" id="myMd" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
