@@ -393,7 +393,8 @@ const editable = {
                     //linhas entre [4,6] são do vespertino
                     if ((row >= 4 && row <= 6) || editable.is_ext) {
                         const temp_cods = Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext));
-                        results = $.ui.autocomplete.filter(temp_cods, request.term);
+                        const uniqueTempCods = removeDuplicates(temp_cods);
+                        results = $.ui.autocomplete.filter(uniqueTempCods, request.term);
                     } else {
                         results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
                     }
@@ -602,3 +603,6 @@ function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell, ext){
     }); 
 }
 
+function removeDuplicates(arr) {
+    return arr.filter((item, index) => arr.indexOf(item) === index);
+}
