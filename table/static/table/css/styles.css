@@ -22,6 +22,7 @@
     border-color: #C0C0C0;
     border-width: 3px; 
 }
+
 #tbl_ext{
     font-style: italic;
     font-family: 'Times New Roman', serif;
@@ -33,6 +34,7 @@
 
 .headerusp {
     background-color: #1094AB;
+    margin-bottom: 2vh;
 }
 
 .logo {
