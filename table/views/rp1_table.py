@@ -126,8 +126,8 @@ def salvar_profs_rp1(request):
                 },
                 "semestre": 1
             }
-            aula_manha_noite(data, alertas)
-            aula_noite_outro_dia_manha(data, alertas)
+            aula_manha_noite(data, alertas, ano)
+            aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(data["info"], ano, data, erros):
                 try:
