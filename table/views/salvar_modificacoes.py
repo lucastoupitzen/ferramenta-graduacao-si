@@ -271,14 +271,14 @@ def aula_manha_noite(data, alertas, ano):
 #a mesma observação da função imediatamente acima vale para essa
 def aula_noite_outro_dia_manha(data, alertas, ano):
     inf = data["info"]
+
+    if inf["horario"] not in (0,7):
+        return False
     
     # o horário precisa ser do matutino 1 e diferente de segunda-feira
     # OU do noturno 2 e diferente de sexta-feira
-    if (inf["horario"] != 7 and inf["dia"] == 8) or \
-        (inf["horario"] != 0 and inf["dia"] == 0): 
-        #Tem um valor que deve ser aceito
-        #que é segunda noturno 2
-        if not (inf["horario"] == 7 and inf["dia"] == 0):
+    if (inf["horario"] == 7 and inf["dia"] == 8) or \
+        (inf["horario"] == 0 and inf["dia"] == 0):
             return False
 
     # Um dicionário para evitar mais uma consulta
@@ -292,13 +292,16 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
     else:
         semestres_testados = [1,3,5,7]
 
+
     professor = Professor.objects.get(Apelido = inf["professor"])
     dia_alerta_rp1 = False
+
     for semestre in semestres_testados:
         dia_alerta = Dia.objects.filter(DiaSemana=ind_lado_dia, Horario=hr,
                                     Turmas__NroUSP__Apelido=inf["professor"],
                                     Turmas__CoDisc__SemestreIdeal=semestre,
                                     Turmas__Ano=ano)
+
         if dia_alerta: break
 
         try:
@@ -330,6 +333,7 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
             except: pass
         except: pass
 
+
     
     if dia_alerta:
         dia = dia_alerta.first().get_DiaSemana_display().lower()
@@ -341,6 +345,7 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
             dia_lado = aux
 
         alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
+
                           f"aula na noite de {dia_lado} e de manhã na {dia}\n")
         
     if dia_alerta_rp1:
@@ -353,6 +358,7 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
 
         alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
                           f"aula na noite de {dia_lado} e de manhã na {dia}\n")
+
     
 
 def aula_msm_horario(inf, ano, data, erros):
@@ -373,11 +379,16 @@ def aula_msm_horario(inf, ano, data, erros):
             aux = t
             break
 
+    # print(aux.CoDisc)
+    # print(aux.CodTurma)
+    # print(aux.CoDisc.SemestreIdeal)
+    # print(aux.semestre_extra)
+    # print(aux.Eextra)
     if conflito_hr:
         msg = (
             f"Conflito na {str(conflito_hr.first())}"
             f" do professor(a) {inf['professor']}"
-            f" com o semestre {aux.CoDisc.SemestreIdeal}\n"
+            f" com o semestre {aux.semestre_extra}\n"
         )
         erros["prof_msm_hr"] = msg
         return True
