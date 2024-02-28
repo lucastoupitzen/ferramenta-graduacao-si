@@ -124,7 +124,11 @@ def index(request, semestre, ano):
             if rest_prof.impedimento:
                 impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
-    discs = Disciplina.objects.all()
+    if ano == AnoAberto.objects.get(id=1).Ano:
+        discs = Disciplina.objects.filter(ativa=True)
+    else:
+        discs = Disciplina.objects.all()
+
     cods_tbl_hr = {}
     cods_tbl_hr_ext = {}  # códigos para preencher a tabela de matérias que não são do semestre selecionado
     mtr_auto_nome = {}  # auxilia no autocomplete para encontrar o código da turma extra
@@ -207,7 +211,7 @@ def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
 
     # Obtém as disciplinas obrigatórias e anota se elas têm turmas associadas ao ano específico
-    disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria").annotate(
+    disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria", ativa=True).annotate(
         has_turmas_no_ano=Count('turma', filter=Q(turma__Ano=ano, turma__Eextra="N"))
     ).order_by("SemestreIdeal")
 

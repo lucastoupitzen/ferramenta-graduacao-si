@@ -29,8 +29,9 @@ def planilha_si(sheet_si, smt, ano):
             Eextra="N",
         )
         .prefetch_related("dia_set", "CoDisc")
-        .order_by("CoDisc__SemestreIdeal", "CodTurma")
+        .order_by("CoDisc__SemestreIdeal", "CoDisc__CoDisc", "CodTurma")
     )
+    print(turmas_queryset)
 
     format_border(sheet_si, "A1")
     sheet_si.merge_cells("A1:E2")
