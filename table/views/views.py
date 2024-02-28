@@ -240,11 +240,12 @@ def menu(request):
     for tur in turmas:
         if not tur.NroUSP.Apelido:
             continue
+
         nome = tur.NroUSP.Apelido
         cred = tur.CoDisc.CreditosAula
 
         if nome not in faltando_hrs:
-            inicializa_prof(faltando_hrs, nome)
+            inicializa_prof(faltando_hrs, nome, tur.NroUSP)
 
         hrs = faltando_hrs[nome][tur.SemestreAno]
 
@@ -256,15 +257,11 @@ def menu(request):
 
     for prof in profs:
         nome = prof.Apelido
-        #PRECISA CONSIDERAR PG
-
-        pg_par = prof.PG_1_semestre
-        pg_impar = prof.PG_2_semestre
 
         if nome not in faltando_hrs:
-            inicializa_prof(faltando_hrs, nome)
+            inicializa_prof(faltando_hrs, nome, prof)
 
-    anos_ant = [i for i in range(ano - 5, ano)]
+    anos_ant = [i for i in range(2015, ano)]
     context = {
         "anos_ant": anos_ant,
         "anoAberto": ano,
@@ -272,6 +269,15 @@ def menu(request):
         "falta_aula": faltando_hrs
     }
     return render(request, "table/menu.html", context)
+
+def inicializa_prof(dicio, nome, prof):
+    pg_par = prof.PG_1_semestre
+    pg_impar = prof.PG_2_semestre
+
+    dicio[nome] = {
+        "I": pg_impar,
+        "P": pg_par
+    }
 
 @login_required
 def redirect(request):
@@ -293,10 +299,7 @@ def save_modify(request):
 
     data = json.load(request)
     info_par = data["info"]
-    print("Aqui está o info_par")
-    print(info_par)
-    print("Aqui está o data")
-    print(data)
+
     ano = AnoAberto.objects.get(id=1).Ano
 
     erros = {}
@@ -494,9 +497,3 @@ def pref_planilha(request):
     return render(request, "table/menu.html")
 
 
-def inicializa_prof(dicio, nome):
-    # falta somar a pg do ano
-    dicio[nome] = {
-        "I": 0,
-        "P": 0
-    }

@@ -19,6 +19,7 @@ class Professor(models.Model):
     consideracao2 = models.CharField(max_length=500, default=None, null=True, blank=True)
     pos_doc = models.CharField(max_length=500, default="", null=True, blank=True)
     pref_optativas = models.CharField(max_length=300, default="", null=True, blank=True)
+    em_atividade = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.NomeProf)
@@ -38,7 +39,7 @@ class Disciplina(models.Model):
         ("optativaSI", "Optativa - Sistemas de informação"),
     ]
     TipoDisc = models.CharField(max_length=12, choices=tipo, default="obrigatoria")
-
+    ativa = models.BooleanField(default=True)
     def __str__(self):
         return str(self.CoDisc)
 

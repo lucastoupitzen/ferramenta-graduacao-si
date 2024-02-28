@@ -73,7 +73,8 @@ def page_rp1(request, text=""):
     context = {
         "rp1": rp1_turmas,
         "auto_profs": auto_profs,
-        "text_erro": text
+        "text_erro": text,
+        "anoAberto": AnoAberto.objects.get(id=1).Ano
     }
     return render(request, "table/rp1Table.html", context)
 
