@@ -430,6 +430,14 @@ const editable = {
                     }
                 };
             }
+        } else {
+            window.addEventListener("click", editable.close);
+                cell.onkeydown = evt => {
+                    if (evt.key=="Enter" || evt.key=="Escape") {
+                        editable.close(evt.key=="Enter" ? true : false);
+                        return false;
+                    }
+                };
         }
         
 

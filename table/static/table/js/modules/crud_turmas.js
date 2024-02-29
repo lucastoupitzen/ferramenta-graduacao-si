@@ -78,6 +78,7 @@ const save_edition = {
         
     },
     requisicao: (content, cell_cod, row, col) => {
+        console.log(content)
         const myEvent = { 
             info: content,
             semestre: semestre,
