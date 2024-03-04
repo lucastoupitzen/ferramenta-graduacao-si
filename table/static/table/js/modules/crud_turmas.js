@@ -42,6 +42,7 @@ const save_edition = {
         if(vUsercod == "ACH0042 RP2") {
             const nomesSeparados = vUserProf.split(" / ");
             vl["ant_prof"] = "A definir";
+            let indice = 1
             nomesSeparados.forEach((nome) => {
                 let infosParCell = {
                     "cod_disc" : cod_db,
@@ -50,11 +51,12 @@ const save_edition = {
                     "dia": dia,
                     "cod_turma": lastCellContent,
                     "tipo": type,
+                    "posicao": indice,
                     "extra": vl["extra"]
                 }
-                
+                console.log(type)
+                indice++;
                 if(type === "u") infosParCell = $.extend(infosParCell, vl);
-                console.log(infosParCell)
                 save_edition.requisicao(infosParCell, cell, row, col);
             })
 

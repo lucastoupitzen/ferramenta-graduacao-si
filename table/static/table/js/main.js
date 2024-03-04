@@ -16,7 +16,7 @@ const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_tot
 import { save_edition } from "./modules/crud_turmas.js";
 import { controlaPopUp } from "./modules/popUp.js"
 // exportando para o crud_turmas
-export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable}; 
+export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable, coresRestrições}; 
 
 //lista de disciplinas do CB que não podem ser editadas
 const listaCB = ["ACH0021 TADI", "ACH0141 SMD", "ACH0041 RP1"]
@@ -196,9 +196,9 @@ $(document).ready(function () {
             icon.closest('table').find('td').removeClass('red-impedimento');
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
-            const cellContent = icon.parent().text().trim();
-            let indexes = getCellIndexes(cellContent)[0];
-            let indexes_imp = getCellIndexes(cellContent)[1]
+            const apelido = icon.parent().text().trim();
+            let indexes = getCellIndexes(apelido)[0];
+            let indexes_imp = getCellIndexes(apelido)[1]
             
             if(id === "tbl_ext"){
                 indexes = adaptaParaExt(indexes)
@@ -214,7 +214,7 @@ $(document).ready(function () {
                 });
                 impedimento = true;
             } else {
-                 // Remove todas as mensagens flutuantes existentes
+                    // Remove todas as mensagens flutuantes existentes
                 $('.floating-message').remove();
                 // Exibir mensagem flutuante
                 const message = $('<div/>', {
@@ -296,20 +296,23 @@ $(document).ready(function () {
 function coresRestrições() {
     let cells = $('#tbl1 td');
     for(let i = 0; i < 90; i++) {
-        let apelido = cells.eq(i)[0].innerText;
-        if(apelido) {
-            Object.keys(dtl_profs).map((professor) => {
-                if(dtl_profs[professor][1] == apelido) {
-                    if(getCellIndexes(apelido)[0].includes(i)) {
-                        cells.eq(i).addClass("prof-na-restricão")
+        let conteudoCelula = cells.eq(i)[0].innerText.split(" / ");
+        conteudoCelula.forEach((apelido) => {
+
+            if(apelido) {
+                Object.keys(dtl_profs).map((professor) => {
+                    if(dtl_profs[professor][1] == apelido) {
+                        if(getCellIndexes(apelido)[0].includes(i)) {
+                            cells.eq(i).addClass("prof-na-restricão")
+                        }
+                        if(getCellIndexes(apelido)[1].includes(i)) {
+                            cells.eq(i).addClass("prof-no-impedimento")
+                        }
                     }
-                    if(getCellIndexes(apelido)[1].includes(i)) {
-                        cells.eq(i).addClass("prof-no-impedimento")
-                    }
-                }
-            })
-        }
-        if(listaCB.includes(apelido)) cells.eq(i).addClass("materia-cb-bloqueada")
+                })
+            }
+            if(listaCB.includes(apelido)) cells.eq(i).addClass("materia-cb-bloqueada")
+        })
     }
 };
 
