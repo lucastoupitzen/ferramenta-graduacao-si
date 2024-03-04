@@ -1,5 +1,6 @@
 export {controlaPopUp}
 
+import { coresRestrições } from "../main";
 function controlaPopUp(cell, apelidos) {
 
         let resposta = {};
@@ -8,6 +9,7 @@ function controlaPopUp(cell, apelidos) {
         
         document.getElementById("closePopup").addEventListener("click", function() {
             document.getElementById("popup").style.display = "none";
+            coresRestrições();
         });
         
         document.getElementById("submitForm").addEventListener("click", function() {
@@ -30,6 +32,7 @@ function controlaPopUp(cell, apelidos) {
             // Feche o pop-up
             document.getElementById("popup").style.display = "none";
             cell.html(resp.join(" / "));
+            coresRestrições();
 
         });
     

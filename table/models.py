@@ -74,10 +74,10 @@ class Turma(models.Model):
     SemestreAno = models.CharField(default="P", max_length=1, choices=[("P", "par"), ("I", "impar")])
 
     class Meta:
-        unique_together = (("Ano", "CodTurma", "CoDisc", "SemestreAno", "Eextra"),)
+        unique_together = (("Ano", "CodTurma", "CoDisc", "SemestreAno", "Eextra", "NroUSP"),)
 
     def __str__(self):
-        return "0" + str(self.CodTurma) + "/" + str(self.CoDisc)
+        return "0" + str(self.CodTurma) + "/" + str(self.CoDisc) 
 
 
 class Dia(models.Model):
