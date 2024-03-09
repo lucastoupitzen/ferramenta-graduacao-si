@@ -1,7 +1,7 @@
 from django.db.utils import IntegrityError
 
 from table.models import *
-from django.db.models import Q
+from django.db.models import *
 
 
 def update_prof(inf, year, smt):
@@ -9,13 +9,16 @@ def update_prof(inf, year, smt):
     extra = "N"
     if inf["extra"] or inf["horario"] in (2, 4):
         extra = "S"
-
-    turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
-                                 CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra)
-    prof = Professor.objects.get(Apelido=inf["professor"])
-    turma_db.NroUSP = prof
-    turma_db.save()
-    return turma_db
+    try:
+        turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
+                                    CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra, 
+                                    NroUSP=Professor.objects.get(Apelido=inf["professor"]))
+        prof = Professor.objects.get(Apelido=inf["professor"])
+        turma_db.NroUSP = prof
+        turma_db.save()
+        return turma_db
+    except:
+        pass
 
 
 def update_prof_RP(inf, year, smt):
@@ -79,17 +82,21 @@ def deletar_valor_RP(data, year, erros):
 
     try:
         dia = Dia.objects.get(DiaSemana=int(infos_user["dia"]), Horario=int(infos_user["horario"]))
-        obj_turma = dia.Turmas.get(Ano=year, CoDisc=codisc,
+        obj_turma = Turma.objects.filter(Ano=year, CoDisc=codisc,
                                    CodTurma=str(infos_user["cod_turma"]), SemestreAno=smt_ano)
-        num_days_turma = obj_turma.dia_set.all()
         
-        if len(num_days_turma) > 1:
-            obj_turma.dia_set.remove(dia)
-        else:
-            obj_turma.delete()
+        for obj in obj_turma:
 
-    except:
-        return
+            num_days_turma = obj.dia_set.all()
+            
+            if len(num_days_turma) > 1:
+                obj.dia_set.remove(dia)
+            else:
+                obj.delete()
+
+    except Exception as e:
+        print(e)
+        erros["delecao"] = "Erro ao deletar par de células de RP2\n"
 
 
 def cadastrar_turma_RP(turma, ano, smt):
@@ -99,42 +106,54 @@ def cadastrar_turma_RP(turma, ano, smt):
         extra = "S"
 
     smt_ano = "I" if smt % 2 else "P"
-
-    try:
-        nova_turma = Turma.objects.create(
-            CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
-            CodTurma=turma["cod_turma"],
-            Ano=ano,
-            NroUSP=Professor.objects.get(Apelido=turma["professor"]),
-            Eextra=extra,
-            SemestreAno=smt_ano
-        )
-        nova_turma.save()
-        nova_turma_RP = Turmas_RP(
-        turma = nova_turma,
-        professor = Professor.objects.get(Apelido=turma["professor"]),
-        )
-        try:
-            nova_turma_RP.save()
-        except:
-            print("erro")
-            return False
-    except:
-        nova_turma = Turma.objects.get(
+    try: 
+        turma_existe = Turma.objects.get(
         CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
         CodTurma=turma["cod_turma"],
         Ano=ano,
         Eextra=extra,
         SemestreAno=smt_ano
         )
-        nova_turma_RP = Turmas_RP(
-        turma = nova_turma,
-        professor = Professor.objects.get(Apelido=turma["professor"]),
-        )
-        try:
-            nova_turma_RP.save()
-        except:
-            return False
+        if turma_existe:
+            turma_existe.delete()
+
+    except: 
+            
+            nova_turma = Turma.objects.create(
+                CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
+                CodTurma=turma["cod_turma"],
+                Ano=ano,
+                NroUSP=Professor.objects.get(Apelido=turma["professor"]),
+                Eextra=extra,
+                SemestreAno=smt_ano
+            )
+            nova_turma.save()
+            try: 
+                nova_turma_RP = Turmas_RP.objects.create(
+                turma = nova_turma,
+                professor = Professor.objects.get(Apelido=turma["professor"]),
+                )
+                nova_turma_RP.save()
+            except:
+                print("Erro ao registrar nova turma de rp2")
+                return False
+    # except:
+    #     nova_turma = Turma.objects.get(
+    #     CoDisc=Disciplina.objects.get(CoDisc=turma["cod_disc"]),
+    #     CodTurma=turma["cod_turma"],
+    #     Ano=ano,
+    #     Eextra=extra,
+    #     SemestreAno=smt_ano
+    #     )
+    #     try: 
+    #         nova_turma_RP = Turmas_RP.objects.create(
+    #         turma = nova_turma,
+    #         professor = Professor.objects.get(Apelido=turma["professor"]),
+    #         )
+    #         nova_turma_RP.save()
+    #     except:
+    #         print("Erro ao registrar nova turma de rp2 - caso 2")
+    #         return False
     
     return nova_turma
 
@@ -176,7 +195,8 @@ def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
 
     if not turma_db:
         turma_db = Turma.objects.get(Ano=year, CoDisc=str(turma["cod_disc"]),
-                                     CodTurma=str(turma["cod_turma"]), SemestreAno=smt_ano, Eextra=extra)
+                                     CodTurma=str(turma["cod_turma"]), SemestreAno=smt_ano, Eextra=extra,
+                                     NroUSP=Professor.objects.get(Apelido=turma["professor"]))
     
     dia = Dia.objects.filter(DiaSemana=int(turma["dia"]), Horario=int(turma["horario"]))
 
@@ -375,6 +395,8 @@ def aula_msm_horario(inf, ano, data, erros):
         #     continue
 
         conflito_hr = t.dia_set.filter(DiaSemana=inf["dia"], Horario=inf["horario"])
+        print("Teste conflito de hora")
+        print(conflito_hr)
         if conflito_hr:
             aux = t
             break
@@ -385,6 +407,7 @@ def aula_msm_horario(inf, ano, data, erros):
     # print(aux.semestre_extra)
     # print(aux.Eextra)
     if conflito_hr:
+        print(aux.semestre_extra)
         msg = (
             f"Conflito na {str(conflito_hr.first())}"
             f" do professor(a) {inf['professor']}"
