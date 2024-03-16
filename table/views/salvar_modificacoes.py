@@ -9,10 +9,12 @@ def update_prof(inf, year, smt):
     extra = "N"
     if inf["extra"] or inf["horario"] in (2, 4):
         extra = "S"
+
     try:
+        
         turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
-                                    CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra, 
-                                    NroUSP=Professor.objects.get(Apelido=inf["professor"]))
+                                        CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra, 
+                                        NroUSP=Professor.objects.get(Apelido=inf["ant_prof"]))
         prof = Professor.objects.get(Apelido=inf["professor"])
         turma_db.NroUSP = prof
         turma_db.save()
@@ -24,7 +26,7 @@ def update_prof(inf, year, smt):
 def update_prof_RP(inf, year, smt):
     smt_ano = "I" if smt % 2 else "P"
     extra = "N"
-    if inf["extra"] or turma["horario"] in (2, 4):
+    if inf["extra"] or ["horario"] in (2, 4):
         extra = "S"
 
     turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
@@ -45,7 +47,6 @@ def update_cod(data, year, erros, smt, ind_modif):
     turma_obj = cadastrar_turma(inf, year, smt)
     update_prof(inf, year, data["semestre"])
     atualizar_dia(turma_obj, inf, year, erros, smt, ind_modif)
-
 
 def deletar_valor(data, year, erros):
     # Iterar sobre as turmas do banco de dados e excluir aquelas que não estão em tbl_user
@@ -395,8 +396,7 @@ def aula_msm_horario(inf, ano, data, erros):
         #     continue
 
         conflito_hr = t.dia_set.filter(DiaSemana=inf["dia"], Horario=inf["horario"])
-        print("Teste conflito de hora")
-        print(conflito_hr)
+        
         if conflito_hr:
             aux = t
             break
@@ -407,7 +407,6 @@ def aula_msm_horario(inf, ano, data, erros):
     # print(aux.semestre_extra)
     # print(aux.Eextra)
     if conflito_hr:
-        print(aux.semestre_extra)
         msg = (
             f"Conflito na {str(conflito_hr.first())}"
             f" do professor(a) {inf['professor']}"

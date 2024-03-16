@@ -1,6 +1,6 @@
 export {controlaPopUp}
 
-import { coresRestrições } from "../main";
+import { coresRestrições } from "../main.js";
 function controlaPopUp(cell, apelidos) {
 
         let resposta = {};

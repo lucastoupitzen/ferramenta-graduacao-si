@@ -1,5 +1,7 @@
 
 const auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
+const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
+const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 
 function openModal(title, messages) {
     const modalBody = document.getElementById("modalBody");
@@ -8,6 +10,11 @@ function openModal(title, messages) {
     const myModal = new bootstrap.Modal(document.getElementById("myModal"));
     myModal.show();
 }
+
+$(function() {
+    coresRestrições();
+})
+
 
 $(document).ready(function() {
     $(".icone").mouseover(function() {
@@ -38,6 +45,7 @@ $(document).ready(function() {
         $("#submitForm").off("click").on("click", function(){
             controlaPopUp(cell.prev(), auto_profs);
         });
+
     });
 
     $(function() {
@@ -117,39 +125,74 @@ $(document).ready(function() {
                   "X-CSRFToken": getCookie("csrftoken"), 
                 },
                 success: (data) => {
-                    const erros = data["erros"]
-                    const alertas = data["alertas"]
-                    const cred_err = erros.hasOwnProperty("credito")
-                    const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
-                    if(prof_hr_err){
-                        openModal("ERRO", erros["prof_msm_hr"]);
-                        $('#myModal').on('hidden.bs.modal', function () {
-                            editable.edit(cell.get(0), row, col, content["extra"]);
-                            return;
-                        });
-                    }
-                    else if(cred_err) {
-                        openModal("ERRO", erros["credito"]);
-                        $('#myModal').on('hidden.bs.modal', function () {
-                            editable.edit(cell_cod, row, col, content["extra"]);
-                            return;
-                        });       
-                    }
-                    else if(Object.keys(alertas).length !== 0){
+                    const erros = data["erros"];
+                    const alertas = data["alertas"];
 
-                        let alerta_msg = "";
-    
-                        if(alertas.hasOwnProperty("aula_manha_noite")){
-                            alerta_msg += alertas["aula_manha_noite"]
+                    const mostrarAlerta = (tipo, mensagem, callback) => {
+                        if (tipo === "ERRO") {
+                            openModal("ERRO", mensagem);
+                        } else {
+                            openModal("Warning(s)", mensagem);
                         }
-    
-                        if(alertas.hasOwnProperty("alert2")){
-                            //Alerta de quando um msm professor dá aula no noturno 2
-                            // e no matutino 1 no dia posterior
-                            alerta_msg += alertas["alert2"]
+                        $('#myModal').on('hidden.bs.modal', () => {
+                            callback();
+                        });
+                    };
+
+                    const mostrarProximoErro = () => {
+                        const keysErro = Object.keys(erros);
+        
+                        if (keysErro.length > 0) {
+                            const prof = keysErro[0];
+                            const erro_prof = erros[prof];
+                            const keysErroProf = Object.keys(erro_prof);
+                            if (keysErroProf.length > 0) {
+                                const erro = keysErroProf[0];
+                                const mensagem = erro_prof[erro];
+                                delete erro_prof[erro];
+                                if (Object.keys(erro_prof).length === 0) {
+                                    delete erros[prof];
+                                }
+                                mostrarAlerta("ERRO", mensagem, mostrarProximoErro);
+                                return; // Saia da função após mostrar o erro
+                            } 
+                            
+                            delete erros[keysErro[0]];
+                            mostrarProximoErro();
                         }
-                        openModal("Warning(s)", alerta_msg);
-                    }
+                        else {
+                            mostrarProximoAlerta()
+                        }
+                    };   
+
+                    const mostrarProximoAlerta = () => {
+                        const keysAlerta = Object.keys(alertas);
+                        if (keysAlerta.length > 0) {
+                            const prof = keysAlerta[0];
+                            const alerta_prof = alertas[prof];
+                            const keysAlertaProf = Object.keys(alerta_prof);
+                            if (keysAlertaProf.length > 0) {
+                                const alerta = keysAlertaProf[0];
+                                const mensagem = alerta_prof[alerta];
+                                delete alerta_prof[alerta];
+                                if (Object.keys(alerta_prof).length === 0) {
+                                    delete alertas[prof];
+                                }
+                                mostrarAlerta("ALERTA", mensagem, mostrarProximoAlerta);
+                                return; // Saia da função após mostrar o alerta
+                            }
+                            delete alertas[keysAlerta[0]];
+                            mostrarProximoAlerta();
+                        }
+                        else {
+                            location.reload(true);
+                        }
+                    };
+
+                    mostrarProximoErro(); // Inicia exibindo os erros
+
+                    
+                    
                 },
                 error: (error) => {
                     alert("Ocorreu um erro ao manipular as informações");
@@ -161,8 +204,11 @@ $(document).ready(function() {
             lProfs.forEach(nome => {
                 row.append('<td class="d-none n_completo">'+nome+'</td>')
             });
+            $(cell).removeClass("prof-na-restricão");
+            $(cell).removeClass("prof-no-impedimento");
             $("#popup").hide();
             cell.html(resp.join(","));
+            coresRestrições()
         }
     }
 });
@@ -182,3 +228,68 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+ // Função para obter índices de células das restrições de horário de um professor
+ function getCellIndexes(cellName) {
+    const indexes = [];
+    const indexes_rest = [];
+    const indexes_imped = []
+    const rest_prof = restricos_hro[cellName]
+    const impedimentos = impedimentos_totais[cellName]
+    indexes_rest.push(...rest_prof);
+    indexes_imped.push(...impedimentos);
+    indexes.push(indexes_rest)
+    indexes.push(indexes_imped)
+    return indexes;
+}
+
+function arrayCompare(first, last)
+{
+    var result = first.filter(function(item){ return last.indexOf(item) > -1});   
+    return result.length;  
+} 
+
+function coresRestrições() {
+    // dicionário de correspondencia
+    //para aproveitar os indices da tabela de atribuição original
+
+    const correspondencia = {
+        "13": [22, 23, 33, 34, 35, 36],
+        "14": [46, 47, 57, 58, 68, 69, 79, 80],
+        "22": [2 , 3, 13, 14],
+        "23": [22, 23, 33, 34, 35, 36],
+        "24": [46, 47, 57, 58, 68, 69, 79, 80],
+        "32": [2 , 3, 13, 14],
+        "33": [26, 27, 39, 40],
+        "34": [46, 47, 57, 58, 68, 69, 79, 80],
+        "43": [26, 27, 39, 40],
+        "44": [48, 49, 59, 60, 70, 71, 81, 82],
+        "52": [4, 5, 15, 16],
+        "53": [22, 23, 33, 34, 35, 36],
+        "54": [48, 49, 59, 60, 70, 71, 81, 82],
+        "64": [50, 51, 61, 62, 72, 73, 83, 84],
+        "74": [50, 51, 61, 62, 72, 73, 83, 84]
+
+    }
+
+    let cells_profs = $('.si_profs');
+    let cells_turmas = $('.codigo');
+    for(let i = 0; i < 15; i++) {
+        let conteudoCelulaProfs = cells_profs.eq(i)[0].innerText.split(",");
+        let turma = cells_turmas.eq(i)[0].innerText
+        conteudoCelulaProfs.forEach((apelido) => {
+
+            if(apelido) {
+                if(apelido[0] == " ") apelido = apelido.substring(1)
+                if(arrayCompare(getCellIndexes(apelido)[0], correspondencia[turma]) == correspondencia[turma].length) {
+                    console.log(cells_profs.eq(i))
+                    cells_profs.eq(i).addClass("prof-na-restricão")
+                }
+                if(arrayCompare(getCellIndexes(apelido)[1], correspondencia[turma]) == correspondencia[turma].length) {
+                    cells_profs.eq(i).addClass("prof-no-impedimento")
+                }
+                
+            }
+        })
+    }
+};

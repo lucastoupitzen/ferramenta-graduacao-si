@@ -10,7 +10,8 @@ const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textCo
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 // const turmas_rp = JSON.parse(document.getElementById("turmas_rp").textContent);
-
+console.log(restricos_hro)
+console.log(impedimentos_totais)
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";
@@ -363,7 +364,9 @@ const editable = {
         if (col % 2 === 0){
         
             
-            if($(cell).prev()[0].innerText == "ACH0042 RP2") controlaPopUp($(cell), auto_profs);
+            if($(cell).prev()[0].innerText == "ACH0042 RP2") {
+                controlaPopUp($(cell), auto_profs);
+            }
             else {
                 //autocompleta com o nome do professor
                 $(cell).autocomplete({
@@ -422,7 +425,10 @@ const editable = {
         if($(cell).prev()[0]){
             
             if($(cell).prev()[0].innerText == "ACH0042 RP2") {
+                let anterior = $(cell)[0].innerText;
+
                 $("#submitForm").on("click", editable.close);
+            
             } 
             else {
                 window.addEventListener("click", editable.close);
@@ -570,12 +576,12 @@ const editable = {
                 //"i/u" == insert/update
                 if(editable.previousValue !== ""){
                     //update
-                    if(colCod)
-                    vl["ant_cod"] = editable.previousValue;
-                    else
-                    vl["ant_prof"] = editable.previousValue;
-
+                    if(colCod) vl["ant_cod"] = editable.previousValue;
+                    else {
+                        vl["ant_prof"] = editable.previousValue;
+                    }
                     save_edition.extrairDados(editable.selected, col, row, colCod, "u", vl);
+                    
                     
                 }else{
                     
@@ -584,6 +590,7 @@ const editable = {
     
                     
                 }
+                
             }
 
             //(C6) caso de deleção
