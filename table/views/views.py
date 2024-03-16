@@ -232,7 +232,8 @@ def menu(request):
         if turmas:
             for tur in turmas:
                 print(tur.CodTurma)
-                turmas_obrig.remove(tur.CodTurma)
+                if tur.CodTurma in turmas_obrig :
+                    turmas_obrig.remove(tur.CodTurma)
 
         formatted_turmas = [f"{num:02d}" for num in turmas_obrig]
         result_string = ", ".join(formatted_turmas)
@@ -319,7 +320,6 @@ def save_modify(request):
 
     if info_par["tipo"] == "d":
         if info_par["cod_disc"] == "ACH0042":
-            print("Boa")
             deletar_valor_RP(data, ano, erros)
         else:
             deletar_valor(data, ano, erros)
@@ -343,19 +343,7 @@ def save_modify(request):
             aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(info_par, ano, data, erros):
-                if info_par["cod_disc"] == "ACH0042":
-                    if info_par["posicao"] == 1:
-                        deletar_valor_RP(data, ano, erros)
-                #     deletar_valor_RP(data, ano, erros)
-                #     aula_manha_noite(data, alertas, ano)
-                #     aula_noite_outro_dia_manha(data, alertas, ano)
-
-                #     if not aula_msm_horario(info_par, ano, data, erros):
-                    
-                #         turma_obj = cadastrar_turma_RP(info_par, ano, data["semestre"])
-                #         update_prof(info_par, ano, data["semestre"])
-                #         atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
-                # else:
+               
                     turma_obj = update_prof(info_par, ano, data["semestre"])
                     indice_tbl_update(turma_obj, ind_modif, info_par)
 
