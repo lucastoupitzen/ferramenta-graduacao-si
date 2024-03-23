@@ -380,6 +380,17 @@ const editable = {
                         $(cell).removeClass("prof-no-impedimento");
                         coresRestrições();
                         return false;
+                    },
+                    create: function() {
+                        $(this).data('ui-autocomplete')._renderItem = function(ul, item) {
+                            const li = $("<li>")
+                                .append("<div>" + item.label + "</div>")
+                                .appendTo(ul);
+                            if (item.label === "João Luiz Bernardes Junior") {
+                                li.css("background-color", "#2ccc27");
+                            }
+                            return li;
+                        };
                     }
                 }).focus(function() {
                     $(this).autocomplete("search");

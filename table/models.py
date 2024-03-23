@@ -216,3 +216,30 @@ class Restricao(models.Model):
             cls.objects.bulk_create(restricoes, ignore_conflicts=True)
 
 
+
+# #Turma TADI
+# class TadiTurma(models.Model):
+#     professor_si = models.ManyToManyField(Professor)
+#     codigo = models.IntegerField()
+#     curso = models.CharField(max_length=300, default=None, null=True, blank=True)
+#     ano = models.DecimalField(max_digits=4, decimal_places=0)
+#
+#     class Meta:
+#         unique_together = (("codigo", "curso", "ano"),)
+#
+# class DiaAulaTadi(models.Model):
+#     turma_tadi = models.ForeignKey(TadiTurma, on_delete=models.CASCADE)
+#     dias = [("Seg", "Seg"), ("Ter", "Ter"), ("Qua", "Qua"), ("Qui", "Qui"), ("Sex", "Sex")]
+#     dia_semana = models.CharField(max_length=3, choices=dias, default=None)
+#     horarios = [
+#         ("8:00 - 09:45h", "8:00 - 09:45h"),
+#         ("10:15 - 12:00h", "10:15 - 12:00h"),
+#         ("14:00 - 15:45h", "14:00 - 15:45h"),
+#         ("16:15-18:00h", "16:15-18:00h"),
+#         ("19:00 - 20:45h", "19:00 - 20:45h"),
+#         ("21:00 - 22:45h", "21:00 - 22:45h"),
+#     ]
+#     horario = models.CharField(default=None, max_length=20, choices=horarios)
+#
+#     class Meta:
+#         unique_together = (("turma_tadi", "dia_semana", "horario"),)
