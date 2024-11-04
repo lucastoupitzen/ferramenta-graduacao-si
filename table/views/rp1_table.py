@@ -115,7 +115,7 @@ def salvar_profs_rp1(request):
         }        
         prof_bd = Professor.objects.get(NomeProf=prof)
         print(corresp_horarios[dia_aula_rp1.horario])
-        for horario in  corresp_horarios[dia_aula_rp1.horario]:
+        for horario in corresp_horarios[dia_aula_rp1.horario]:
             data = {
                 "info": {
                     'cod_disc': 'ACH0041',

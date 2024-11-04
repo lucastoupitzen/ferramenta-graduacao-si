@@ -41,17 +41,22 @@
         <div class="col-2">
           <nav id="navbar-example3" class="h-100 flex-column align-items-stretch pe-4 border-end">
                 <nav class="nav nav-pills flex-column">
-                    <h5 class="text-warning-emphasis ms-3 mt-2">Funcionalidades</h5> 
-                    <a class="nav-link" href="#item-1">Grade Horária</a>
-                    <a class="nav-link" href="{% url 'page_rp1' %}">Grade horária(RP1)</a>
-                    <a class="nav-link" href="#item-8">Upload RP1</a>
-                    <a class="nav-link" href="#item-3">Upload Forms</a>
+                    <h5 class="text-warning-emphasis ms-3 mt-2">Funcionalidades</h5>
+                    <a class="nav-link" href="#item-0">Atribuição automática</a> 
+                    <a class="nav-link" href="#item-1">Grade horária</a>
+                    <a class="nav-link" href="{% url 'page_rp1' %}">Grade horária (RP1)</a>
+                    <!--<a class="nav-link" href="#item-8">Upload RP1</a>-->
+                    <a class="nav-link" href="{% url 'page_tadi' %}">Grade horária (TADI)</a>
+                    <!--<a class="nav-link" href="#item-9">Upload TADI</a>-->
+                    <a class="nav-link" href="#item-3">Upload de Dados</a>
                     <a class="nav-link" href="#item-4">Baixar Planilhas</a>
                     <hr>
                     <h5 class="text-warning-emphasis ms-3 mt-2">Pendências {{anoAberto}}</h5>
-                    <a class="nav-link" href="#item-5">Docentes com menos de 8 horas-aula (Ímpar)</a>
-                    <a class="nav-link" href="#item-6">Docentes com menos de 8 horas-aula (Par)</a>
-                    <a class="nav-link" href="#item-7">Disciplinas obrigatórias sem turmas alocadas</a>
+
+                    <a class="nav-link" href="#item-5">Docentes com menos de 8 horas-aula</a>
+                    <!--<a class="nav-link" href="#item-6">Docentes com menos de 8 horas-aula (Par)</a>-->
+
+                    <a class="nav-link" href="#item-7">Disciplinas obrigatórias sem horário alocado</a>
                 </nav>
             </nav>
           </nav>
@@ -94,9 +99,13 @@
                 </div>
                 
                 <div class="d-none" id="item-3">
-                    <h4>Carregar dados no sistema com planilhas</h4>
+                    <h4>Carregue as preferências</h4>
                     <div class="col-sm-8">
-                        <p>Obs: Os dados somente valerão para o ano de funcionamento</p>
+                        <ul>
+                            <li><p>Essa planilhas deve ser vindas do forms de preferências, seguindo o modelo</p></li>
+                            <li><p>Carregar as preferências de disciplinas para todo o ano é essencial para a atribuição automática</p></li>
+
+                        </ul>
                         <form method="post" action="{% url 'process_file' %}" enctype="multipart/form-data">
                             {% csrf_token %}
                             <div class="mb-3">
@@ -110,12 +119,59 @@
                                 <option value="pref_hro_2">Preferências de Horário para o 2º semestre</option>
                             </select>
                             </div>
-                            <button type="submit" class="btn btn-warning">Enviar</button>
+                            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
                         </form>
-                    </div> 
+                    </div>
+                    <hr>
+                    <div class="col-sm-8">
+                        <h4>Planilha de Resolução de Problema 1 (RP1)</h4>
+                        <ul>
+                            <li><p>Sempre cadastre os professores de SI pela tabela
+                                de grade horária RP1(menu ao lado), já que sistema não lê um professor de SI da coluna docentes da planilha.
+                            </p></li>
+                            <li><p>Após enviar a planilha, as turmas serão criadas e o sistema direcionará para a tabela editável
+                                de RP1.
+                            </p></li>
+                            <li><p> Toda vez que a planilha for recarregada o sistema apaga os cadastros anteriores no respectivo ano.
+                            </p></li>
+                            <li><p>O modelo da planilha para upload é o de RP1 2024, caso seja diferente do modelo erros podem ocorrer.
+                            </p></li>
+                           
+                        </ul>
+                        <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+            
+                            <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários RP1</label>
+                            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+                            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+                        </form>
+                    </div>
+                    <hr>
+                    <div class="col-sm-8">
+                        <h4>Planilha de Tratamento e análise de Dados (TADI)</h4>
+                        <ul>
+                            <li>As mesmas considerações da planilha de RP1, descritas acima, são válidas para esta.</li>
+                        </ul>
+                        <form method="post" action="{% url 'load_tadi' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+            
+                            <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários TADI</label>
+                            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+                            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+                        </form>
+                    </div>  
+
                 </div>
                 <div class="d-none" id="item-4">
-                    <h5>Planilhas de distribuição e atribuição</h5>
+                    <h5>Considerações</h5>
+                    <ul>
+                        <li>Três planilhas serão baixadas compactadas em um arquivo.zip</li>
+                        <li>Uma é a de atribuição, nomeada como docentes.xlsx, e o restante de distribuição</li>
+                        <li>Use a de docentes.xlsx depois de gerar a atribuição automática, modifique-a e suba novamente ao sistema </li>
+                        <li>Já a de destribuição estará preenchidas conforme as grades forem completadas</li>
+                        <li>Obs: o código da planilha de destribuição é antigo e pode necessitar de revisões</li>
+                    </ul>
+
                     <div class="col-sm-8">
                         <form method="POST" action="{% url 'download_zip_planilhas'%}">
                             {% csrf_token %}
@@ -131,33 +187,15 @@
                         </form>
                     </div>
                 </div>
+                
                 <div class="d-none" id="item-8">
-                    <div class="col-sm-8">
-                        <h4>Considerações</h4>
-                        <ul>
-                            <li><p>Sempre cadastre os professores de SI pela tabela
-                                de grade horária RP1(menu ao lado), já que sistema não lê um professor de SI da coluna docentes da planilha.
-                            </p></li>
-                            <li><p>Após enviar a planilha as turmas serão criadas e o sistema direcionará para a tabela editável
-                                de RP1.
-                            </p></li>
-                            <li><p> Toda vez que a planilha for recarregada, o sistema recupera os 
-                                professores de SI registrados se a turma já existia em planilhas anteriores do ano.
-                            </p></li>
-                            <li><p>O modelo da planilha para upload é o de RP1 2024, caso seja diferente do modelo erros podem ocorrer.
-                            </p></li>
-                           
-                        </ul>
-                        <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
-                            {% csrf_token %}
-            
-                            <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários RP1</label>
-                            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
-                            <button type="submit" class="btn btn-warning">Enviar</button>
-                        </form>
-                    </div>   
-                </div> 
-                <div class="d-none" id="item-5"> 
+                     
+                </div>
+                <div class="d-none" id="item-9">
+                     
+                </div>
+
+                <div class="d-none" id="item-5">
                     <div class="col-sm-10" id="pend_impar">
                         <h5>Docentes com menos de 8 horas-aula (Ímpar)</h5>
                         <p>*CH = carga horária já registrada no sistema</p>
@@ -177,10 +215,8 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                    </div> 
-                </div>
-
-                <div class="d-none" id="item-6">
+                    </div>
+                    
                     <div class="col-sm-10" id="pend_par">
                         <h5>Docentes com menos de 8 horas-aula (Par)</h5>
                         <p>*CH = carga horária já registrada no sistema</p>
@@ -200,16 +236,54 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div> 
+                </div>
+
+                <div class="d-none" id="item-6">
+                    
+                </div>
+                <div class="d-none" id="item-0">
+                    <div class="col-sm-10" id="pend_par">
+                        <h4>Gerar atribuição</h4>
+                        <ul>
+                            <li><p>Use essa função após abrir um novo ano de válido e ter feito o upload da planilha vinda
+                                do forms que contém as preferências dos professores para disciplinas de todo o ano.
+                            </p></li>
+                            <li><p>Para ver a planilha de atribuição gerada automaticamente use a opção "baixar planilhas" desse menu.
+                            </p></li>
+                            <li><p> Os professores atribuidos às disciplinas serão sugeridos no prenchimento das grades horárias</p></li>
+                            <li><p> NÂO preencha as grades antes de ter usado essa função.</p></li>
+                            <li><p> Ao clicar em gerar novamente o sistema apaga todas as turmas anteriormente criadas para o ano</p></li>
+                            <li><p>obs: Olhe o status pelo terminal, ainda falta criar uma caixa de texto para informar o status da criação</p></li>
+                            
+                        </ul>
+                        <form method="post" action="{% url 'gerar_atribuicao' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">Gerar</button>
+                        </form>
+                        <br>
+                        <h4>Upload</h4>
+                        
+                        <form method="post" action="{% url 'load_atribuicao' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+            
+                            <label for="inputFile" class="form-label">Após baixar a planilha docentes.xlsx, que é a de atribuição, faça o upload dela modificada abaixo.
+                                Ela servirá para sugerir professores nas tabelas de grades horárias do ano válido.</label>
+                            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+                            <button type="submit" class="btn btn-warning">Enviar</button>
+                        </form>
+
+                        <p> Obs: gerencie as mudanças nas justificativas (licença-premio, pós-doc etc) pela área admin</p>
+
                     </div>
                 </div>
                 <div class="d-none" id="item-7">
-                    <div class="col-12" id="disc_sem_turma">
-                        <h5>Disciplinas obrigatórias sem turmas alocadas</h5>    
+                    <div class="col-12" id="disc_sem_turma">  
                         <table class="table table-bordered table-hover">
                             <thead class="table-warning">
                                 <th scope="col" class="align-middle" >Nome</th>
                                 <th scope="col" class="align-middle" >Abreviação</th>
-                                <th scope="col" class="align-middle" >Turma(s) faltando</th>
+                                <th scope="col" class="align-middle" > Turma sem período/dia alocado</th>
                                 <th scope="col" class="align-middle" >Semestre</th>
                             </thead>
                             <tbody>
@@ -253,10 +327,9 @@
        
         $('.nav-link').click(function(e) {
             const targetId = $(this).attr('href'); 
-            if(targetId !== "#item-2"){
-                $('#item-1, #item-2, #item-3, #item-4, #item-5, #item-6, #item-7, #item-8').addClass("d-none")
-                $(targetId).removeClass('d-none')
-            }
+            $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-6, #item-7, #item-8, #item-9').addClass("d-none")
+            $(targetId).removeClass('d-none')
+            
         });
     });
  </script>

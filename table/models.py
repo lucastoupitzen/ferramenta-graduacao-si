@@ -17,12 +17,31 @@ class Professor(models.Model):
     PG_2_semestre = models.IntegerField(default=0)
     consideracao1 = models.CharField(max_length=500, default=None, null=True, blank=True)
     consideracao2 = models.CharField(max_length=500, default=None, null=True, blank=True)
-    pos_doc = models.CharField(max_length=500, default="", null=True, blank=True)
-    pref_optativas = models.CharField(max_length=300, default="", null=True, blank=True)
+    pos_doc = models.CharField(max_length=500, default="", null=True, blank=True) #Descontinuado, olhe a tbl justificativamenos8horas
+    pref_optativas = models.CharField(max_length=300, default="", null=True, blank=True) # Descontinuado
     em_atividade = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.NomeProf)
+
+class justificativaMenos8Horas(models.Model):
+    justificativas = [
+        ("afastado", "Afastado"),
+        ("compensacao_creditos", "Compensação de Créditos"),
+        ("emprestimo", "Empréstimo"),
+        ("licenca_maternidade", "Licença-Maternidade"),
+        ("licenca_premio", "Licença-Prêmio"),
+        ("sem_contrato", "Sem Contrato"),
+        ("pos_doc", "Pós-Doutorado")
+    ]
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE)
+    justificativa = models.CharField(max_length=20, choices=justificativas, default="licenca_premio")
+    ano = models.DecimalField(max_digits=4, default=2024, decimal_places=0)
+    semestre_ano = models.CharField(default="P", max_length=1, choices=[("P", "par"), ("I", "impar")])
+    texto_justificando = models.CharField(max_length=500, default=None, null=True, blank=True)
+    class Meta:
+        unique_together = (("professor", "ano", "semestre_ano"),)
+
 
 
 class Disciplina(models.Model):
@@ -36,7 +55,7 @@ class Disciplina(models.Model):
     tipo = [
         ("obrigatoria", "Obrigatória"),
         ("optativaCB", "Optativa - Ciclo Básico"),
-        ("optativaSI", "Optativa - Sistemas de informação"),
+        ("dea", "Optativa - Sistemas de informação"),
     ]
     TipoDisc = models.CharField(max_length=12, choices=tipo, default="obrigatoria")
     ativa = models.BooleanField(default=True)
@@ -47,7 +66,7 @@ class Disciplina(models.Model):
 class Preferencias(models.Model):
     NumProf = models.ForeignKey(Professor, on_delete=models.CASCADE)
     CoDisc = models.ForeignKey(Disciplina, on_delete=models.CASCADE)
-    AnoProf = models.DecimalField(max_digits=4, decimal_places=0, null=True, blank=True)
+    AnoProf = models.DecimalField(max_digits=4, default=2024, decimal_places=0)
     Semestre = models.IntegerField(choices=[(1, "impar"), (2, "par")])
     PRIORIDADE = [
         (1, "1"),
@@ -57,7 +76,7 @@ class Preferencias(models.Model):
     nivel = models.IntegerField(choices=PRIORIDADE, default=1)
 
     class Meta:
-        unique_together = (("NumProf", "CoDisc"),)
+        unique_together = (("NumProf", "CoDisc", "AnoProf"),)
 
     def __str__(self):
         return f"{str(self.NumProf.Apelido)} - {str(self.CoDisc.Abreviacao)}"
@@ -115,6 +134,16 @@ class RP1Turma(models.Model):
 
     class Meta:
         unique_together = (("codigo", "cursos", "profs_adicionais", "ano"),)
+
+
+# Serve para preencher a planilha de atribuição
+class RP1TurmaPreview(models.Model):
+    professor_si = models.ManyToManyField(Professor)
+    codigo = models.IntegerField()
+    ano = models.DecimalField(max_digits=4, decimal_places=0)
+
+    class Meta:
+        unique_together = (("codigo", "ano"),)
 
 
 class DiaAulaRP1(models.Model):
@@ -216,30 +245,48 @@ class Restricao(models.Model):
             cls.objects.bulk_create(restricoes, ignore_conflicts=True)
 
 
+#Turma TADI
+class TadiTurma(models.Model):
+    professor_si = models.ManyToManyField(Professor)
+    codigo = models.IntegerField()
+    curso = models.CharField(max_length=300, default=None, null=True, blank=True)
+    ano = models.DecimalField(max_digits=4, decimal_places=0)
 
-# #Turma TADI
-# class TadiTurma(models.Model):
-#     professor_si = models.ManyToManyField(Professor)
-#     codigo = models.IntegerField()
-#     curso = models.CharField(max_length=300, default=None, null=True, blank=True)
-#     ano = models.DecimalField(max_digits=4, decimal_places=0)
-#
-#     class Meta:
-#         unique_together = (("codigo", "curso", "ano"),)
-#
-# class DiaAulaTadi(models.Model):
-#     turma_tadi = models.ForeignKey(TadiTurma, on_delete=models.CASCADE)
-#     dias = [("Seg", "Seg"), ("Ter", "Ter"), ("Qua", "Qua"), ("Qui", "Qui"), ("Sex", "Sex")]
-#     dia_semana = models.CharField(max_length=3, choices=dias, default=None)
-#     horarios = [
-#         ("8:00 - 09:45h", "8:00 - 09:45h"),
-#         ("10:15 - 12:00h", "10:15 - 12:00h"),
-#         ("14:00 - 15:45h", "14:00 - 15:45h"),
-#         ("16:15-18:00h", "16:15-18:00h"),
-#         ("19:00 - 20:45h", "19:00 - 20:45h"),
-#         ("21:00 - 22:45h", "21:00 - 22:45h"),
-#     ]
-#     horario = models.CharField(default=None, max_length=20, choices=horarios)
-#
-#     class Meta:
-#         unique_together = (("turma_tadi", "dia_semana", "horario"),)
+    class Meta:
+        unique_together = (("codigo", "curso", "ano"),)
+
+
+class TadiTurmaPreview(models.Model):
+    professor_si = models.ManyToManyField(Professor)
+    codigo = models.IntegerField()
+    ano = models.DecimalField(max_digits=4, decimal_places=0)
+
+    class Meta:
+        unique_together = (("codigo", "ano"),)
+
+
+class DiaAulaTadi(models.Model):
+    turma_tadi = models.ForeignKey(TadiTurma, on_delete=models.CASCADE)
+    dias = [("Seg", "Seg"), ("Ter", "Ter"), ("Qua", "Qua"), ("Qui", "Qui"), ("Sex", "Sex")]
+    dia_semana = models.CharField(max_length=3, choices=dias, default=None)
+    horarios = [
+        ("8:00 - 09:45h", "8:00 - 09:45h"),
+        ("10:15 - 12:00h", "10:15 - 12:00h"),
+        ("14:00 - 15:45h", "14:00 - 15:45h"),
+        ("16:15 - 18:00h", "16:15 - 18:00h"),
+        ("19:00 - 20:45h", "19:00 - 20:45h"),
+        ("21:00 - 22:45h", "21:00 - 22:45h"),
+    ]
+    horario = models.CharField(default=None, max_length=20, choices=horarios)
+
+    class Meta:
+        unique_together = (("turma_tadi", "dia_semana", "horario"),)
+
+
+class RP2TurmaPreview(models.Model):
+    professor_si = models.ManyToManyField(Professor)
+    codigo = models.IntegerField()
+    ano = models.DecimalField(max_digits=4, decimal_places=0)
+
+    class Meta:
+        unique_together = (("codigo", "ano"),)

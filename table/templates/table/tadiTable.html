@@ -22,14 +22,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
    
     {%load static %}
-    <script type="module" src="{% static 'table/js/rp1Table.js' %}"></script>
+    <script type="module" src="{% static 'table/js/tadiTable.js' %}"></script>
     {{ auto_profs|json_script:"auto_profs"}}
     
     <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
     <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
     <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
 
-    <title>RP1</title>
+    <title>TADI</title>
 
 </head>
 
@@ -82,7 +82,7 @@
         </div>
         </div>
     </div>
-    <div style="width:90%; font-size: 12px;" class="mx-auto">    
+    <div style="width:55%; font-size: 12px;" class="mx-auto">    
         <div class="modal fade" id="myMd" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
@@ -95,8 +95,9 @@
                     <p>Verifique se o valor do horário está correto</p>
                     <ul>
                         <li>Dias válidos: "Seg", "Ter", "Qua", "Qui", "Sex"</li>
-                        <li>Horários válidos: "08h - 12h", "14h - 18h", "19h - 22h45"</li>
-                        <li> Os dois valores devem estar separados por um espaço</li>
+                        <li>Horários válidos: "8:00 - 09:45h", "10:15 - 12:00h", "14:00 - 15:45h", "16:15 - 18:00h", "19:00 - 20:45h",
+                            "21:00 - 22:45h"</li>
+                        <li>Os dois valores devem estar separados por um espaço</li>
                     </ul>
                 </div>
                 <div class="modal-footer">
@@ -106,37 +107,25 @@
             </div>
         </div>
           
-        <div id="url-data" data-url="{% url 'save_p' %}"></div>
+        <div id="url-data" data-url=" {% url 'save_tadi' %}"></div>
         <div id="popup" class="popup">
             <div class="popup-content">
                 <span id="closePopup" class="close">&times;</span>
-                <h4>Atribua professores para RP1</h4>
-                
                 <p>Professor:</p>
-                <input type="text" id="prof_rp1" class="form-control autocomplete campo1" placeholder="Digite o nome">
+                <input type="text" id="prof_tadi" class="form-control autocomplete campo1" placeholder="Digite o nome">
                 <p id="0" style="display:none"></p>
-                
-                <p>Professor:</p>
-                <input type="text" id="prof_rp2" class="form-control autocomplete campo2" placeholder="Digite o nome">
-                <p id="1" style="display:none"></p>
-                
-                <p>Professor:</p>
-                <input type="text" id="prof_rp3" class="form-control autocomplete campo3" placeholder="Digite o nome">
-                <p id="2" style="display:none"></p>
-
-                <input type="submit" class="btn btn-secondary" id="submitForm" value="Salvar">
+                <input type="submit" class="btn btn-warning" id="submitForm" value="Salvar">
             </div>
         </div>
 
-        <h4>Tabela de atribuição e horários para Resolução de Problemas 1(RP1)</h4>
+        <h4>Tratamento e Análise de Dados e Informações (TADI)</h4>
 
         <table class="table table-bordered table-hover mt-3">
             <thead class="table-warning">
                 <th scope="col" class="align-middle" >TURMA</th>
                 <th scope="col" class="align-middle" >HORARIO</th>
-                <th scope="col" class="align-middle" >CURSOS</th>
-                <th scope="col" class="align-middle" >DOCENTES</th>
-                <th scope="col" class="align-middle  text-nowrap">PROFS. SI</th>
+                <th scope="col" class="align-middle" >CURSO</th>
+                <th scope="col" class="align-middle  text-nowrap">PROFESSOR</th>
                 <th scope="col" class="align-middle"> EDITAR</th>
             </thead>
             <tbody>
@@ -148,12 +137,12 @@
                     {% endfor%}
                     
                     <td>{{ query.codigo}}</td>
-                    {% for d in query.diaaularp1_set.all%}
+                    {% for d in query.diaaulatadi_set.all%}
                     <td class="text-nowrap" style="text-transform: capitalize;">{{ d.dia_semana }} {{d.horario}}</td>
                     {% endfor%}
                     
-                    <td>{{ query.cursos }}
-                    <td>{{ query.profs_adicionais }}</td>
+                    <td>{{ query.curso }}
+
                     <td class="d-none .id">{{query.id}}</td>
                     <td class="si_profs">
                     {% for p in query.professor_si.all%}
