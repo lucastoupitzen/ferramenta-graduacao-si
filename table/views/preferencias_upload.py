@@ -6,7 +6,8 @@ import unidecode
 
 def pref_disc_excel_impar(sem, row, prof_db, header):
     values = (
-        [row for row in row[2:18]] if sem == "impar" else [row for row in row[18:32]]
+        # [row for row in row[2:18]] if sem == "impar" else [row for row in row[18:32]] antiga
+        [row for row in row[2:16]] if sem == "impar" else [row for row in row[16:30]]
     )
     ano = AnoAberto.objects.get(id=1).Ano
     ini = 18 if sem == "par" else 2
@@ -16,19 +17,17 @@ def pref_disc_excel_impar(sem, row, prof_db, header):
         col_value = header[i]
         cod_mtr = re.search(r"ACH\d{4}", col_value)
         semestre = 2 if sem == "par" else 1
-        try:
-            disc_bd = Disciplina.objects.get(CoDisc=cod_mtr.group())
-            preferencia = Preferencias(
-                NumProf=prof_db,
-                CoDisc=disc_bd,
-                AnoProf=ano,
-                nivel=int(value),
-                Semestre=semestre,
-            )
-            preferencia.save()
-        except Exception as e:
-            # print(f"funçao: pref_disc: {e}")
-            pass
+
+        disc_bd = Disciplina.objects.get(CoDisc=cod_mtr.group())
+        preferencia = Preferencias(
+            NumProf=prof_db,
+            CoDisc=disc_bd,
+            AnoProf=ano,
+            nivel=int(value),
+            Semestre=semestre,
+        )
+        preferencia.save()
+
 
 
 def pref_horarios(row, prof_db, semestre_par):
@@ -63,31 +62,50 @@ def pref_horarios(row, prof_db, semestre_par):
             periodo="todos_periodos", dia=dia, nro_usp=prof_db, semestre="1"
         )
 
-    if not semestre_par and row[34] is not None:
-        dia, per = row[34].split()
-        dia = unidecode.unidecode(dia.lower())
-        per = unidecode.unidecode(per.lower())
-        Restricao.criar_restricoes(
-                periodo=per, dia=dia, nro_usp=prof_db, semestre="1", impedimento=True
-            )
-        # print(f"dia: {dia} periodo: {per} professor: {prof_db.NomeProf}")
-        rest = prof_db.restricao_set.filter(
-            dia=dia, periodo=per, semestre="1"
-        ).first()
+    # if not semestre_par and row[34] is not None: versão antiga
+    # 37, 38, 39
 
-        mtv_prof = False
 
-        if row[35] is not None:
-            mtv_prof = MtvRestricao(mtv=row[35])
-            mtv_prof.save()
+    manha = row[37]
+    tarde = row[38]
+    noite = row[39]
 
-        if not rest:
-            rest = Restricao(periodo=per, dia=dia, nro_usp=prof_db, semestre="1")
+    variaveis = {
+        manha: "manha",
+        tarde: "tarde",
+        noite: "noite"
+    }
 
-        if rest and mtv_prof:
-            rest.motivos = mtv_prof
+    if not semestre_par:
 
-        rest.save()
+        for dia in (manha, tarde, noite):
+            if dia is None:
+                continue
+
+            # dia, per = row[34].split()
+
+            dia = unidecode.unidecode(dia.lower())
+            Restricao.criar_restricoes(
+                    periodo=variaveis[dia], dia=dia, nro_usp=prof_db, semestre="1", impedimento=True
+                )
+            # print(f"dia: {dia} periodo: {per} professor: {prof_db.NomeProf}")
+            rest = prof_db.restricao_set.filter(
+                dia=dia, periodo=variaveis[dia], semestre="1"
+            ).first()
+
+            mtv_prof = False
+
+            if row[35] is not None:
+                mtv_prof = MtvRestricao(mtv=row[35])
+                mtv_prof.save()
+
+            if not rest:
+                rest = Restricao(periodo=per, dia=dia, nro_usp=prof_db, semestre="1")
+
+            if rest and mtv_prof:
+                rest.motivos = mtv_prof
+
+            rest.save()
 
     if row[36] is not None:
         dia = unidecode.unidecode(row[36].lower())

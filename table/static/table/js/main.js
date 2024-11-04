@@ -1,6 +1,5 @@
 'use strict';
 //Carregando os dados enviados do views.py e que serão utilizados no javascript
-//Depois tentar fazer elas serem variáveis locais
 const semestre = parseInt(JSON.parse(document.getElementById("smt").textContent));
 const dtl_profs = JSON.parse(document.getElementById("dtl_profs").textContent);
 const auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
@@ -9,6 +8,13 @@ const cods_auto_obrig = JSON.parse(document.getElementById("cods_auto_obrig").te
 const mtr_auto_nome = JSON.parse(document.getElementById("mtr_auto_nome").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
+let cod_mtr_sugestao = JSON.parse(document.getElementById("cod_mtr_sugestao").textContent);
+const cod_mtr_sugestao_completo = JSON.parse(document.getElementById("cod_mtr_sugestao_completo").textContent);
+
+export function setCodMtr(new_value) {
+    cod_mtr_sugestao = new_value;
+}
+
 // const turmas_rp = JSON.parse(document.getElementById("turmas_rp").textContent);
 console.log(restricos_hro)
 console.log(impedimentos_totais)
@@ -17,7 +23,7 @@ console.log(impedimentos_totais)
 import { save_edition } from "./modules/crud_turmas.js";
 import { controlaPopUp } from "./modules/popUp.js"
 // exportando para o crud_turmas
-export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable, coresRestrições}; 
+export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable, coresRestrições, cod_mtr_sugestao}; 
 
 //lista de disciplinas do CB que não podem ser editadas
 const listaCB = ["ACH0021 TADI", "ACH0141 SMD", "ACH0041 RP1"]
@@ -253,6 +259,7 @@ $(document).ready(function () {
     });
 
     $(".editable td").on("dblclick", handleDoubleClick);
+
     function handleDoubleClick(event) {
         const cell = event.currentTarget; // A célula em que ocorreu o duplo clique
         const target = event.target; // O elemento alvo do clique dentro da célula
@@ -269,9 +276,9 @@ $(document).ready(function () {
             const specialRows = [5, 9, 11];
             if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
         }
-                   
+
         //coluna das turmas não deve ser editável
-        if(colIndex === 11) return
+        if(colIndex === 11 || colIndex % 2 === 0) return
 
         // Verifica se o alvo do clique é o ícone
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex, is_ext);
@@ -360,21 +367,40 @@ const editable = {
         $(cell).attr("contenteditable", "true");
         $(cell).focus();
         
+        const temp_cods = Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext));
+        const uniqueTempCods = removeDuplicates(temp_cods);
+
         // (B2.1) ADD AUTOCOMPLETE
         if (col % 2 === 0){
-        
             
             if($(cell).prev()[0].innerText == "ACH0042 RP2") {
                 controlaPopUp($(cell), auto_profs);
             }
             else {
                 //autocompleta com o nome do professor
+                  // Elementos que estão em list1, mas não em list2
+                  const list1 = cod_mtr_sugestao_completo[$(cell).prev()[0].innerText];
+                  const list2 = cod_mtr_sugestao[$(cell).prev()[0].innerText];
+                  console.log("----------")
+                  console.log(list2)
+
+                  const uniqueInList1 = difference(list1, list2);
+                  let list_sugestao = cod_mtr_sugestao[$(cell).prev()[0].innerText]
+                  
+                  uniqueInList1.forEach(function(word) {
+  
+                      if(searchInTableRows(cell, word) === true){
+                          list_sugestao.push(word)
+                      }
+
+                  });
+
                 $(cell).autocomplete({
+                    
                     source: function(request, response) {
-                        const results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
-                        response(results.slice(0, 3));
+                        response(list_sugestao);
                     },
-                    minLength: 2,
+                    minLength: 1,
                     select: function(event, ui) {
                         const nomeProf = ui.item.value;
                         const apelidoProf = auto_profs[nomeProf];
@@ -398,8 +424,7 @@ const editable = {
                     let results;
                     //linhas entre [4,6] são do vespertino
                     if ((row >= 4 && row <= 6) || editable.is_ext) {
-                        const temp_cods = Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext));
-                        const uniqueTempCods = removeDuplicates(temp_cods);
+                        
                         results = $.ui.autocomplete.filter(uniqueTempCods, request.term);
                     } else {
                         results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
@@ -448,7 +473,6 @@ const editable = {
                     }
                 };
         }
-        
 
     },
 
@@ -627,3 +651,68 @@ function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell, ext){
 function removeDuplicates(arr) {
     return arr.filter((item, index) => arr.indexOf(item) === index);
 }
+
+
+function searchInTableRows(cell, word) {
+    // Pegamos a tabela e as linhas da tabela
+    const $table = $(cell).closest('table');
+    const $rows = $table.find('tr');
+    let rowIndex = $(cell).closest('tr').index()
+
+    // Determinamos as linhas a serem buscadas com base nas condições fornecidas
+    let rowsToSearch = [];
+    // console.log("-----")
+    // console.log(rowIndex)
+
+    if (rowIndex === 0 || rowIndex === 1) {
+        rowsToSearch = [0, 1];
+    } else if (rowIndex === 7 || rowIndex === 9) {
+        rowsToSearch = [7, 9];
+    } else if (rowIndex === 8 || rowIndex === 10) {
+        rowsToSearch = [8, 10];
+    } else if (rowIndex === 3 || rowIndex === 5) {
+        rowsToSearch = [3, 5];
+    } else {
+        console.log('Linha não especificada para busca.');
+        return false;
+    }
+
+    // Função para verificar se a palavra está em uma linha
+    function containsWord($row, word) {
+        const $cells = $row.find('td');
+        let found = false;
+        $cells.each(function() {
+            if ($(this).text().includes(word)) {
+                found = true;
+                return false; // Para o loop ao encontrar a palavra
+            }
+        });
+        return found;
+    }
+
+    // Faz a busca nas linhas determinadas
+    let found = false;
+    rowsToSearch.forEach(function(index) {
+        console.log("linhas pesquisada")
+        console.log(index)
+        
+        const $currentRow = $rows.eq(index - 1); // Ajustando para índice 0-based
+        if (containsWord($currentRow, word)) {
+            found = true;
+        }
+    });
+
+    if (found) {
+        console.log('Palavra encontrada.');
+        return true;
+    } else {
+        console.log('Palavra não encontrada.');
+        return false;
+    }
+}
+
+// Função para encontrar elementos exclusivos em cada lista
+function difference(arr1, arr2) {
+    return arr1.filter(element => !arr2.includes(element));
+}
+

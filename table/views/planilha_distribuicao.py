@@ -31,7 +31,7 @@ def planilha_si(sheet_si, smt, ano):
         .prefetch_related("dia_set", "CoDisc")
         .order_by("CoDisc__SemestreIdeal", "CoDisc__CoDisc", "CodTurma")
     )
-    print(turmas_queryset)
+    # print(turmas_queryset)
 
     format_border(sheet_si, "A1")
     sheet_si.merge_cells("A1:E2")
@@ -165,7 +165,7 @@ def escreve_excel(turmas_queryset, sheet_si, extra, row):
     # Iteração pelas turmas, criando as tabelas de horários das disciplinas.
     for i, turma in enumerate(turmas_queryset):
         if not turma.dia_set.all():
-            print(f"turma sem nenhum dia: {turma}")
+            # print(f"turma sem nenhum dia: {turma}")
             continue
         # Obtém a disciplina da turma atual.
         disc = turma.CoDisc

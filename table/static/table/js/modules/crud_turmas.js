@@ -1,5 +1,5 @@
 export {save_edition};
-import { cods_auto_ext, cods_auto_obrig, semestre, openModal, editable} from "../main.js";
+import { cods_auto_ext, cods_auto_obrig, semestre, openModal, editable, cod_mtr_sugestao, setCodMtr} from "../main.js";
 
 const save_edition = {
     
@@ -112,6 +112,8 @@ const save_edition = {
                 const cells_prof_modif = data["cells_modif"]
                 const cred_err = erros.hasOwnProperty("credito")
                 const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
+
+                setCodMtr(data["cod_mtr_sugestao"])
                 
                 cells_prof_modif.forEach(element => {
                     let new_row = element["row"];

@@ -18,6 +18,8 @@ from .preferencias_upload import *
 def index(request, semestre, ano):
     # cria listas com referências diferentes
     # elas serão iteradas no index.html para carregar os dados na planilha editável
+    # Necessita de modularização
+
     tbl_vls = [[""] * 10 for _ in range(8)]
     tbl_vls.insert(3, ["", ""])
 
@@ -30,13 +32,10 @@ def index(request, semestre, ano):
         Q(Ano=ano, Eextra="S", SemestreAno=smt_ano, semestre_extra=semestre)
     )
 
-
     turmas_rp_db = Turma.objects.filter(
         Q(CoDisc="ACH0042", Ano=ano, SemestreAno=smt_ano, Eextra="N") |
         Q(CoDisc="ACH0042", Ano=ano, Eextra="S", SemestreAno=smt_ano, semestre_extra=semestre)
     )
-
-
 
     for tur_materia in vls_turmas:
         cod_disc = tur_materia.CoDisc
@@ -140,7 +139,12 @@ def index(request, semestre, ano):
     cods_tbl_hr_ext = {}  # códigos para preencher a tabela de matérias que não são do semestre selecionado
     mtr_auto_nome = {}  # auxilia no autocomplete para encontrar o código da turma extra
 
+    cod_mtr_sugestao = { }
+
     for disc in discs:
+
+        key = f"{disc.CoDisc} {disc.Abreviacao}"
+        cod_mtr_sugestao[key] = []
 
         if disc.SemestreIdeal == semestre or \
                 (semestre in [8, 7] and disc.TipoDisc == "optativaSI"):
@@ -188,6 +192,10 @@ def index(request, semestre, ano):
                 j = tbl_pref[0].index(pref.CoDisc.Abreviacao)
                 tbl_pref[row][j].append(pref.NumProf.Apelido)
 
+    ano_func = AnoAberto.objects.get(id=1).Ano
+    cod_mtr_sugestao = gera_sugestoes(ano_func, "sem_tds_profs")
+    cod_mtr_sugestao_completo = gera_sugestoes(ano_func, "com_tds_profs")
+
     context = {
         "rest_horarios": restricoes_profs,
         "tbl_pref": tbl_pref,
@@ -202,9 +210,39 @@ def index(request, semestre, ano):
         "impedimentos_totais": impedimentos_totais,
         "tbl_extra": tbl_extra,
         "anoAberto": AnoAberto.objects.get(id=1).Ano,
-        "ano": ano
+        "ano": ano,
+        "cod_mtr_sugestao": cod_mtr_sugestao,
+        "cod_mtr_sugestao_completo": cod_mtr_sugestao_completo
     }
     return render(request, "table/index.html", context)
+
+def gera_sugestoes(ano, tds):
+    discs = Disciplina.objects.all()
+    cod_mtr_sugestao = {}
+
+    for disc in discs:
+        cod_mtr_sugestao[f"{disc.CoDisc} {disc.Abreviacao}"] = set()
+
+    vls_turmas_auto = Turma.objects.filter(Ano=ano, CodTurma__in=[99, 98, 97])
+
+    for vlr_auto in vls_turmas_auto:
+        qtd_turma_manual = Turma.objects.filter(Ano=ano, NroUSP=vlr_auto.NroUSP, CoDisc=vlr_auto.CoDisc).exclude(
+            CodTurma__in=[99, 98, 97]).count()
+        qtd2_turma_auto = Turma.objects.filter(Ano=ano, NroUSP=vlr_auto.NroUSP, CoDisc=vlr_auto.CoDisc,
+                                               CodTurma__in=(98, 99, 97)).count()
+        if tds == "com_tds_profs":
+            key = f"{vlr_auto.CoDisc.CoDisc} {vlr_auto.CoDisc.Abreviacao}"
+            cod_mtr_sugestao[key].add(vlr_auto.NroUSP.Apelido)
+
+        elif qtd_turma_manual < qtd2_turma_auto:
+            key = f"{vlr_auto.CoDisc.CoDisc} {vlr_auto.CoDisc.Abreviacao}"
+            cod_mtr_sugestao[key].add(vlr_auto.NroUSP.Apelido)
+
+    #convertendo para lista os sets pois o json não aceita esse tipo
+    for key, value in cod_mtr_sugestao.items():
+        cod_mtr_sugestao[key] = list(value)
+
+    return cod_mtr_sugestao
 
 
 def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
@@ -217,26 +255,41 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
 def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
 
-    # Obtém as disciplinas obrigatórias e anota se elas têm turmas associadas ao ano específico
-    disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria", ativa=True).annotate(
-        has_turmas_no_ano=Count('turma', filter=Q(turma__Ano=ano, turma__Eextra="N"))
-    ).order_by("SemestreIdeal")
+    anos_ant = [i for i in range(2015, ano)]
+    context = {
+        "anos_ant": anos_ant,
+        "anoAberto": ano,
+        "sem_tur": turmas_obrigatórias_sem_horario(ano),
+        "falta_aula": menos8_horas_aula_prof(ano)
+    }
+    return render(request, "table/menu.html", context)
 
-    # Obtém as disciplinas que não têm turmas associadas ao ano específico
-    discs_incompletas = disciplinas.exclude(has_turmas_no_ano=3)
+
+def turmas_obrigatórias_sem_horario(ano):
+    disciplinas = Disciplina.objects.filter(TipoDisc="obrigatoria", ativa=True).exclude(CoDisc__in=["ACH0021", "ACH0041"]).order_by('SemestreIdeal')
     dict_incompletas = {}
+    for disc in disciplinas:
+        turma02 = disc.turma_set.filter(Eextra="N", Ano=ano, CodTurma=2)
+        turma04 = disc.turma_set.filter(Eextra="N", Ano=ano, CodTurma=4)
+        turma94 = disc.turma_set.filter(Eextra="N", Ano=ano, CodTurma=94)
 
-    for disc in discs_incompletas:
-        turmas = disc.turma_set.filter(Eextra="N", Ano=ano).exclude(CoDisc__CoDisc="ACH0041")
-        turmas_obrig = [2, 4, 94]
-        if turmas:
-            for tur in turmas:
-                print(tur.CodTurma)
-                if tur.CodTurma in turmas_obrig :
-                    turmas_obrig.remove(tur.CodTurma)
+        result_string = ""
 
-        formatted_turmas = [f"{num:02d}" for num in turmas_obrig]
-        result_string = ", ".join(formatted_turmas)
+        if not turma02:
+            result_string = result_string + "02"
+            
+        if not turma04:
+            if result_string == "":
+                result_string = result_string + "04"
+            else:
+                result_string = result_string + ", 04"
+
+
+        if not turma94:
+            if result_string == "":
+                result_string = result_string + "94"
+            else:
+                result_string = result_string + ", 94"
 
         dict_incompletas[disc.Abreviacao] = {
 
@@ -245,51 +298,37 @@ def menu(request):
             "smt": "impar" if disc.SemestreIdeal % 2 else "par"
         }
 
-    faltando_hrs = {}
-    turmas = Turma.objects.filter(Ano=ano)
-    profs = Professor.objects.all()
+    return dict_incompletas
 
-    for tur in turmas:
-        if not tur.NroUSP.Apelido:
-            continue
 
-        nome = tur.NroUSP.Apelido
-        cred = tur.CoDisc.CreditosAula
-
-        if nome not in faltando_hrs:
-            inicializa_prof(faltando_hrs, nome, tur.NroUSP)
-
-        hrs = faltando_hrs[nome][tur.SemestreAno]
-
-        if hrs != -1:
-            faltando_hrs[nome][tur.SemestreAno] += cred
-
-        if hrs + cred >= 8:
-            faltando_hrs[nome][tur.SemestreAno] = -1
-
+def menos8_horas_aula_prof(ano):
+    #código readaptado do planilha_docentes.py
+    profs = Professor.objects.filter(em_atividade=True)
+    dicio = { }
     for prof in profs:
-        nome = prof.Apelido
 
-        if nome not in faltando_hrs:
-            inicializa_prof(faltando_hrs, nome, prof)
+        pg_impar = prof.PG_1_semestre
+        hr_rp1 = 4 * prof.rp1turmapreview_set.filter(ano=ano).count()
+        hr_tadi = 2 * prof.taditurmapreview_set.filter(ano=ano).count()
+        soma_impar = 4 * prof.turma_set.filter(Ano=ano, SemestreAno="I").count() + pg_impar + hr_tadi + hr_rp1
 
-    anos_ant = [i for i in range(2015, ano)]
-    context = {
-        "anos_ant": anos_ant,
-        "anoAberto": ano,
-        "sem_tur": dict_incompletas,
-        "falta_aula": faltando_hrs
-    }
-    return render(request, "table/menu.html", context)
+        if soma_impar >= 8:
+            soma_impar = -1
 
-def inicializa_prof(dicio, nome, prof):
-    pg_par = prof.PG_1_semestre
-    pg_impar = prof.PG_2_semestre
+        pg_par = prof.PG_2_semestre
+        hr_rp2 = 4 * prof.rp2turmapreview_set.filter(ano=ano).count()
+        soma_par = 4 * prof.turma_set.filter(Ano=ano, SemestreAno="P").count() + pg_par + hr_rp2
 
-    dicio[nome] = {
-        "I": pg_impar,
-        "P": pg_par
-    }
+        if soma_par >= 8:
+            soma_par = -1
+
+
+        dicio[prof.Apelido] = {
+            "I": soma_impar,
+            "P": soma_par
+        }
+    return dicio
+
 
 @login_required
 def redirect(request):
@@ -350,7 +389,9 @@ def save_modify(request):
         elif "ant_cod" in info_par:
             update_cod(data, ano, erros, data["semestre"], ind_modif)
 
-    return JsonResponse({'erros': erros, 'alertas': alertas, 'cells_modif': ind_modif})
+    cod_mtr_sugestao = gera_sugestoes(ano, "sem_tds_profs")
+
+    return JsonResponse({'erros': erros, 'alertas': alertas, 'cells_modif': ind_modif, 'cod_mtr_sugestao': cod_mtr_sugestao})
 
 @login_required
 def download_zip_planilhas(request):
@@ -454,18 +495,37 @@ def pref_planilha(request):
                         prof_encontrado = True
 
                 if not prof_encontrado:
+                    print(f"PROFESSOR EMAIL { email_professor } NÃO ENCONTRADO")
                     continue
 
+                # para o semestre_par sendo false a planilha mudou para uma nova
+                # o código abaixo que pega os dados da planilha antiga estão comentados
+                # caso queira utilizar ela para carregar restrições, por exemplo, mude os comentários
+
                 semestre_par = True if excel_type == "pref_hro_2" else False
-                # executar essa linha direto, com o email da planilha usando o try catch
+
                 prof_db = Professor.objects.get(Email=email_professor)
 
                 if semestre_par:
                     prof_db.consideracao2 = row[9]
                 else:
-                    prof_db.consideracao1 = row[37]
-                    prof_db.pos_doc = row[33]
-                    prof_db.pref_optativas = row[32]
+                    # prof_db.consideracao1 = row[37]
+                    # prof_db.pos_doc = row[33]
+                    # prof_db.pref_optativas = row[32]
+
+                    prof_db.consideracao1 = row[78]
+                    if row[31]:
+                        justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="P", texto_justificando=row[33]).save()
+                    elif row[32]:
+                        justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="I", texto_justificando=row[33]).save()
+
+                    if row[34]:
+                        justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="P",
+                                                 texto_justificando=row[36]).save()
+                    elif row[35]:
+                        justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="I",
+                                                 texto_justificando=row[36]).save()
+
                     pref_disc_excel_impar("impar", row, prof_db, header)
                     pref_disc_excel_impar("par", row, prof_db, header)
 
