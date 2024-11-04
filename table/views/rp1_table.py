@@ -64,9 +64,48 @@ def page_rp1(request, text=""):
 
     rp1_turmas = RP1Turma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano)
     profs_objs = Professor.objects.all()
+    rest_turno = {"manha": 0, "tarde": 22, "noite": 48}
+    dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
     auto_profs = {}
+    restricoes_profs = {}
+    impedimentos_totais = {}
     for prof_obj in profs_objs:
         auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
+        restricoes = prof_obj.restricao_set.filter(semestre="1")
+
+        restricoes_profs[str(prof_obj.Apelido)] = []
+        impedimentos_totais[str(prof_obj.Apelido)] = []
+
+        for rest_prof in restricoes:
+            list_rest_indice = []
+            indice = dia_sem[rest_prof.dia] + rest_turno[rest_prof.periodo]
+            if rest_prof.periodo == "tarde" and rest_prof.dia == "segunda":
+                list_rest_indice = [indice, 23, 33, 34, 35, 36]
+            elif rest_prof.periodo == "tarde":
+                list_rest_indice = [indice, indice + 1, indice + 13, indice + 14]
+            elif rest_prof.periodo == "noite":
+                indice = indice - 2
+                list_rest_indice = [
+                    indice,
+                    indice + 1,
+                    indice + 11,
+                    indice + 12,
+                    indice + 22,
+                    indice + 23,
+                    indice + 33,
+                    indice + 34,
+                ]
+            else:
+                list_rest_indice = [indice, indice + 1, indice + 11, indice + 12]
+
+            if str(prof_obj.Apelido) in restricoes_profs:
+                restricoes_profs[str(prof_obj.Apelido)] += list_rest_indice
+            else:
+                restricoes_profs[str(prof_obj.Apelido)] = list_rest_indice
+
+            # impedimento total
+            if rest_prof.impedimento:
+                impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
     text = text.replace("[", "").replace("]", "").replace("'", "")
 
@@ -74,7 +113,9 @@ def page_rp1(request, text=""):
         "rp1": rp1_turmas,
         "auto_profs": auto_profs,
         "text_erro": text,
-        "anoAberto": AnoAberto.objects.get(id=1).Ano
+        "anoAberto": AnoAberto.objects.get(id=1).Ano,
+        "impedimentos_totais": impedimentos_totais,
+        "rest_horarios": restricoes_profs
     }
     return render(request, "table/rp1Table.html", context)
 
@@ -95,6 +136,8 @@ def salvar_profs_rp1(request):
     tur = RP1Turma.objects.get(id=data["id"])
     tur.professor_si.clear()
     for prof in data["lProfs"]:
+        erro_caso = {}
+        alerta_caso = {}
         if not prof:
             continue
         dia_aula_rp1 = DiaAulaRP1.objects.get(turma_rp1 = tur)
@@ -116,6 +159,7 @@ def salvar_profs_rp1(request):
         prof_bd = Professor.objects.get(NomeProf=prof)
         print(corresp_horarios[dia_aula_rp1.horario])
         for horario in corresp_horarios[dia_aula_rp1.horario]:
+
             data = {
                 "info": {
                     'cod_disc': 'ACH0041',
@@ -127,14 +171,24 @@ def salvar_profs_rp1(request):
                 },
                 "semestre": 1
             }
-            aula_manha_noite(data, alertas, ano)
-            aula_noite_outro_dia_manha(data, alertas, ano)
-
-            if not aula_msm_horario(data["info"], ano, data, erros):
+            aula_manha_noite(data, alerta_caso, ano)
+            aula_noite_outro_dia_manha(data, alerta_caso, ano)
+            print("Atenção aqui")
+            print(aula_msm_horario(data["info"], ano, data, erro_caso))
+            print("do professor " + data["info"]["professor"])
+            if not aula_msm_horario(data["info"], ano, data, erro_caso):
                 try:
                     tur.professor_si.add(prof_bd)
                 except Exception as e:
                     print("erroooo")
+            else: 
+                alertas[prof] = alerta_caso
+                erros[prof] = erro_caso
+                break
+            
+            alertas[prof] = alerta_caso
+            erros[prof] = erro_caso
+
     print(erros)
     print(alertas)
     return JsonResponse({'erros': erros, 'alertas': alertas})

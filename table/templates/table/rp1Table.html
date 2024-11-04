@@ -31,6 +31,9 @@
 
     <title>RP1</title>
 
+    {{ rest_horarios|json_script:"rest"}}
+    {{ impedimentos_totais|json_script:"impedimentos_totais"}}
+
 </head>
 
 <body>
@@ -147,7 +150,7 @@
                     <td class="d-none n_completo">{{p}}</td>   
                     {% endfor%}
                     
-                    <td>{{ query.codigo}}</td>
+                    <td class="codigo">{{ query.codigo}}</td>
                     {% for d in query.diaaularp1_set.all%}
                     <td class="text-nowrap" style="text-transform: capitalize;">{{ d.dia_semana }} {{d.horario}}</td>
                     {% endfor%}

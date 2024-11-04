@@ -14,7 +14,7 @@
     border-radius: 4px;
     padding: 8px;
     font-size: 14px;
-    box-shadow: 0 2px 4px rborder-color:gba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rborder-color: gba(0, 0, 0, 0.1);
 }
 
 .custom-border td {
@@ -23,11 +23,11 @@
 }
 
 .prof-na-restricão {
-    color: rgb(202, 134, 6)
+    color: rgb(202, 134, 6) !important
 }
 
 .prof-no-impedimento {
-    color: red
+    color: red !important
 }
 
 .materia-cb-bloqueada {

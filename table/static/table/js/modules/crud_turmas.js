@@ -40,13 +40,20 @@ const save_edition = {
         }
 
         if(vUsercod == "ACH0042 RP2") {
-            const nomesSeparados = vUserProf.split(" / ");
-            vl["ant_prof"] = "A definir";
+            var nomesSeparados = vUserProf.split(" / ");
+            if(vl["ant_prof"]) {
+                var anteriores = vl["ant_prof"].split(" / ");
+                var aux = nomesSeparados
+                nomesSeparados = nomesSeparados.filter(item => !anteriores.includes(item));
+                anteriores = anteriores.filter(item => !aux.includes(item));
+                console.log(nomesSeparados)
+                console.log(anteriores)
+            }
             let indice = 1
             nomesSeparados.forEach((nome) => {
                 let infosParCell = {
                     "cod_disc" : cod_db,
-                    "professor" : nome,
+                    "professor" : nome, 
                     "horario": row,
                     "dia": dia,
                     "cod_turma": lastCellContent,
@@ -55,8 +62,11 @@ const save_edition = {
                     "extra": vl["extra"]
                 }
                 console.log(type)
+                if(type === "u") {
+                    vl["ant_prof"] = anteriores[indice - 1]
+                    infosParCell = $.extend(infosParCell, vl);
+                }    
                 indice++;
-                if(type === "u") infosParCell = $.extend(infosParCell, vl);
                 save_edition.requisicao(infosParCell, cell, row, col);
             })
 
@@ -76,6 +86,7 @@ const save_edition = {
             console.log(infosParCell)
             save_edition.requisicao(infosParCell, cell, row, col);
         }
+        
         
         
     },
@@ -126,6 +137,7 @@ const save_edition = {
                     openModal("ERRO", erros["prof_msm_hr"]);
                     $('#myModal').on('hidden.bs.modal', function () {
                         editable.edit(cell.get(0), row, col, content["extra"]);
+                        location.reload(true)
                         return;
                     });
                     
@@ -140,6 +152,7 @@ const save_edition = {
                     openModal("ERRO", erros["credito"]);
                     $('#myModal').on('hidden.bs.modal', function () {
                         editable.edit(cell_cod, row, col, content["extra"]);
+                        location.reload(true)
                         return;
                     });       
                 }else if(Object.keys(alertas).length !== 0){
@@ -156,6 +169,8 @@ const save_edition = {
                         alerta_msg += alertas["alert2"]
                     }
                     openModal("Warning(s)", alerta_msg);
+                } else {
+                    location.reload(true)
                 }
             },
             error: (error) => {
