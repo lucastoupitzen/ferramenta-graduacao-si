@@ -103,10 +103,11 @@ $(document).ready(function () {
     $(function() {
         $("#prof_rp1, #prof_rp2").autocomplete({
             source: function(request, response) {
-                let results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
+                let results = $.ui.autocomplete.filter(cod_mtr_sugestao_completo["ACH0042 RP2"], request.term);
                 response(results);
             },
-            minLength: 2
+            minLength: 0
+            
         })
     });
 

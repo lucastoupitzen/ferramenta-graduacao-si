@@ -125,6 +125,7 @@ $(document).ready(function() {
                   "X-CSRFToken": getCookie("csrftoken"), 
                 },
                 success: (data) => {
+                    console.log(data)
                     const erros = data["erros"];
                     const alertas = data["alertas"];
 

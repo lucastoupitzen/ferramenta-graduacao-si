@@ -196,6 +196,9 @@ def index(request, semestre, ano):
     cod_mtr_sugestao = gera_sugestoes(ano_func, "sem_tds_profs")
     cod_mtr_sugestao_completo = gera_sugestoes(ano_func, "com_tds_profs")
 
+
+    print(auto_profs)
+    print(cod_mtr_sugestao_completo)
     context = {
         "rest_horarios": restricoes_profs,
         "tbl_pref": tbl_pref,
@@ -230,6 +233,7 @@ def gera_sugestoes(ano, tds):
             CodTurma__in=[99, 98, 97]).count()
         qtd2_turma_auto = Turma.objects.filter(Ano=ano, NroUSP=vlr_auto.NroUSP, CoDisc=vlr_auto.CoDisc,
                                                CodTurma__in=(98, 99, 97)).count()
+
         if tds == "com_tds_profs":
             key = f"{vlr_auto.CoDisc.CoDisc} {vlr_auto.CoDisc.Abreviacao}"
             cod_mtr_sugestao[key].add(vlr_auto.NroUSP.Apelido)
@@ -237,6 +241,11 @@ def gera_sugestoes(ano, tds):
         elif qtd_turma_manual < qtd2_turma_auto:
             key = f"{vlr_auto.CoDisc.CoDisc} {vlr_auto.CoDisc.Abreviacao}"
             cod_mtr_sugestao[key].add(vlr_auto.NroUSP.Apelido)
+
+    rp2 = RP2TurmaPreview.objects.all().first()
+
+    for prof_rp2 in rp2.professor_si.all():
+        cod_mtr_sugestao["ACH0042 RP2"].add(prof_rp2.NomeProf)
 
     #convertendo para lista os sets pois o json não aceita esse tipo
     for key, value in cod_mtr_sugestao.items():
