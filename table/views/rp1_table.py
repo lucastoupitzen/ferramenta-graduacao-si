@@ -63,12 +63,13 @@ def load_rp1(request):
 def page_rp1(request, text=""):
 
     rp1_turmas = RP1Turma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano)
-    profs_objs = Professor.objects.all()
+    profs_objs = RP1TurmaPreview.objects.all().first().professor_si.all()
     rest_turno = {"manha": 0, "tarde": 22, "noite": 48}
-    dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
+    dia_sem = {"segunda": 0, "terca ": 2, "quarta": 4, "quinta": 6, "sexta": 8}
     auto_profs = {}
     restricoes_profs = {}
     impedimentos_totais = {}
+
     for prof_obj in profs_objs:
         auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
         restricoes = prof_obj.restricao_set.filter(semestre="1")

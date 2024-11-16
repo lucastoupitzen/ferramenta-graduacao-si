@@ -382,11 +382,12 @@ const editable = {
                   // Elementos que estão em list1, mas não em list2
                   const list1 = cod_mtr_sugestao_completo[$(cell).prev()[0].innerText];
                   const list2 = cod_mtr_sugestao[$(cell).prev()[0].innerText];
-                  console.log("----------")
-                  console.log(list2)
+                 
 
                   const uniqueInList1 = difference(list1, list2);
-                  let list_sugestao = cod_mtr_sugestao[$(cell).prev()[0].innerText]
+                  let list_sugestao = cod_mtr_sugestao[$(cell).prev()[0].innerText];
+
+                  console.log(uniqueInList1)
                   
                   uniqueInList1.forEach(function(word) {
   
@@ -662,11 +663,9 @@ function searchInTableRows(cell, word) {
 
     // Determinamos as linhas a serem buscadas com base nas condições fornecidas
     let rowsToSearch = [];
-    // console.log("-----")
-    // console.log(rowIndex)
 
     if (rowIndex === 0 || rowIndex === 1) {
-        rowsToSearch = [0, 1];
+        rowsToSearch = [2, 1];
     } else if (rowIndex === 7 || rowIndex === 9) {
         rowsToSearch = [7, 9];
     } else if (rowIndex === 8 || rowIndex === 10) {
@@ -693,9 +692,12 @@ function searchInTableRows(cell, word) {
 
     // Faz a busca nas linhas determinadas
     let found = false;
+
+    console.log("\nlinhas pesquisada rowTosearch")
+    console.log(rowsToSearch)
+    
     rowsToSearch.forEach(function(index) {
-        console.log("linhas pesquisada")
-        console.log(index)
+        
         
         const $currentRow = $rows.eq(index - 1); // Ajustando para índice 0-based
         if (containsWord($currentRow, word)) {

@@ -24,9 +24,11 @@ def page_tadi(request, text=""):
     )
 
     tadi_turmas = TadiTurma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano).order_by(ordering)
-    profs_objs = Professor.objects.all()
+    turmas_tadi = TadiTurmaPreview.objects.all()
     auto_profs = {}
-    for prof_obj in profs_objs:
+    for turma in turmas_tadi:
+        # considerando que só haja uma professor por turma
+        prof_obj = turma.professor_si.all().first()
         auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
 
     text = text.replace("[", "").replace("]", "").replace("'", "")

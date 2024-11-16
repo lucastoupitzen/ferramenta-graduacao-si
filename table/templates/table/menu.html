@@ -61,7 +61,6 @@
             </nav>
           </nav>
         </div>
-      
         <div class="col-8 mt-3">
             <div data-bs-spy="scroll" data-bs-target="#navbar-example3" data-bs-smooth-scroll="true" class="scrollspy-example-2" tabindex="0">
                 <div id="item-1">
@@ -187,13 +186,6 @@
                         </form>
                     </div>
                 </div>
-                
-                <div class="d-none" id="item-8">
-                     
-                </div>
-                <div class="d-none" id="item-9">
-                     
-                </div>
 
                 <div class="d-none" id="item-5">
                     <div class="col-sm-10" id="pend_impar">
@@ -237,10 +229,6 @@
                             </tbody>
                         </table>
                     </div> 
-                </div>
-
-                <div class="d-none" id="item-6">
-                    
                 </div>
                 <div class="d-none" id="item-0">
                     <div class="col-sm-10" id="pend_par">
@@ -320,19 +308,18 @@
     
 </body>
 </html>
-
-
 <script>
     $(document).ready(function() {
-       
+        
         $('.nav-link').click(function(e) {
             const targetId = $(this).attr('href'); 
-            $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-6, #item-7, #item-8, #item-9').addClass("d-none")
+            $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-7').addClass("d-none")
             $(targetId).removeClass('d-none')
             
         });
     });
- </script>
+</script>
+        
 
 
 
