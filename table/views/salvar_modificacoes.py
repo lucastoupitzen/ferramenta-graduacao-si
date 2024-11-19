@@ -1,6 +1,6 @@
 from django.db.utils import IntegrityError
 
-from table.models import *
+from ..models import *
 from django.db.models import *
 
 

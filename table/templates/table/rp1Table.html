@@ -56,7 +56,7 @@
                     <a class="nav-link text-warning" href="#">Ajuda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'logout' %}">Sair</a>
+                    <a class="nav-link text-warning" href="{% url 'hub:logout' %}">Sair</a>
                 </li>
                 
             </ul>
@@ -109,7 +109,7 @@
             </div>
         </div>
           
-        <div id="url-data" data-url="{% url 'save_p' %}"></div>
+        <div id="url-data" data-url="{% url 'ferramenta_graduacao_si:save_p' %}"></div>
         <div id="popup" class="popup">
             <div class="popup-content">
                 <span id="closePopup" class="close">&times;</span>
@@ -170,7 +170,7 @@
                 {%endfor%}
             </tbody>
         </table>
-        <a type="button" class="btn btn-warning mb-3" href="{% url 'menupage' %}">Voltar Menu</a>
+        <a type="button" class="btn btn-warning mb-3" href="{% url 'ferramenta_graduacao_si:menupage' %}">Voltar Menu</a>
     </div>
 </body>
 </html>

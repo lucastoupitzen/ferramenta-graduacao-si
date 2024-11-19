@@ -2,6 +2,8 @@ from django.urls import path, include
 from .views import *
 from .views import tadi_table
 
+app_name = 'ferramenta_graduacao_si'
+
 urlpatterns = [
     path("table/<int:semestre>/<int:ano>/", views.index, name="table"),
     path("save_modify", views.save_modify, name="save_modify"),

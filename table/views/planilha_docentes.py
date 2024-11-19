@@ -10,7 +10,7 @@ from django.shortcuts import render
 from openpyxl.reader.excel import load_workbook
 from unidecode import unidecode
 import math
-from table.models import *
+from ..models import *
 from django.db.models import Prefetch, Count, Q, Max, Value
 from datetime import datetime
 from openpyxl.styles import PatternFill, Font

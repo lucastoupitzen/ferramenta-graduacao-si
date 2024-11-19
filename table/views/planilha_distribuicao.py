@@ -1,4 +1,4 @@
-from table.models import *
+from ..models import *
 from datetime import datetime
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 

@@ -68,7 +68,7 @@
                     <a class="nav-link" href="#">Ajuda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Sair</a>
+                    <a class="nav-link" href="{% url 'hub:logout' %}">Sair</a>
                 </li>
                 
             </ul>
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <div id="url-data" data-url="{% url 'save_modify' %}"></div>
+        <div id="url-data" data-url="{% url 'ferramenta_graduacao_si:save_modify' %}"></div>
         
         
         <!--NÂO APAGUE-->
@@ -394,7 +394,7 @@
                             {%endif%} 
                         {% endfor %}
             
-                        <a type="button" class="btn btn-secondary" href="{% url 'menupage' %}">Voltar Menu</a>
+                        <a type="button" class="btn btn-secondary" href="{% url 'ferramenta_graduacao_si:menupage' %}">Voltar Menu</a>
                     </div>
                 </div>
             </div>

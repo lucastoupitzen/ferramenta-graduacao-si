@@ -4,7 +4,7 @@ import openpyxl
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
-from table.models import *
+from ..models import *
 from django.shortcuts import redirect
 
 from .planilha_distribuicao import *
@@ -21,7 +21,7 @@ def load_rp1(request):
     excel_file = request.FILES.get("excel_file", None)
 
     if not excel_file:
-        return redirect("page_rp1")
+        return redirect("ferramenta_graduacao_si:page_rp1")
 
     if not excel_file.name.endswith(".xlsx"):
         return redirect("page_rp1")

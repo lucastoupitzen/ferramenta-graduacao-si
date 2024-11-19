@@ -1,5 +1,5 @@
 from datetime import datetime
-from table.models import *
+from ..models import *
 import re
 import unidecode
 

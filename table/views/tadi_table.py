@@ -48,10 +48,10 @@ def load_tadi(request):
     excel_file = request.FILES.get("excel_file", None)
 
     if not excel_file:
-        return redirect("page_tadi")
+        return redirect("ferramenta_graduacao_si:page_tadi")
 
     if not excel_file.name.endswith(".xlsx"):
-        return redirect("page_tadi")
+        return redirect("ferramenta_graduacao_si:page_tadi")
 
     workbook = openpyxl.load_workbook(excel_file)
     worksheet = workbook.active

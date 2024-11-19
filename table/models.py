@@ -1,5 +1,8 @@
 from django.db import models
 
+class Meta:
+
+    db_table = 'tool_manage'
 
 class Professor(models.Model):
     NroUsp = models.DecimalField(

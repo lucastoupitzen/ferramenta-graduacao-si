@@ -335,7 +335,7 @@ def redirect(request):
     if request.method == "POST":
         valor_semestre = request.POST["select1"]
         ano = request.POST["anoSelecionado"]
-        diretorio = str("/table/" + valor_semestre + "/" + ano + "/")
+        diretorio = str("./table/" + valor_semestre + "/" + ano + "/")
         return HttpResponseRedirect(diretorio)
     else:
         return HttpResponse("fail")
@@ -403,7 +403,7 @@ def download_zip_planilhas(request):
 
         # planilha de docentes
         cwd = os.getcwd()
-        file_path = os.path.join(cwd, "table/static/table/docentes.xlsx")
+        file_path = os.path.join(cwd, "ferramentas/ferramenta_graduacao_si/table/static/table/docentes.xlsx")
         source_workbook = load_workbook(filename=file_path)
         sheet_doc = source_workbook["docentes"]
         planilha_docentes(sheet_doc)

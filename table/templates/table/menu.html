@@ -21,7 +21,7 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item ">
-                    <p class="nav-link text-warning">Ano válido: {{anoAberto}}</p>
+                    <p class="nav-link text-warning">Ano válido: {{ anoAberto }}</p>
                 </li>
                 <li class="nav-item">
                     <p class="nav-link text-warning" id="nrousp">{{ request.user }}</p>
@@ -30,7 +30,7 @@
                     <a class="nav-link text-warning" href="#">Ajuda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'logout' %}">Sair</a>
+                    <a class="nav-link text-warning" href="{% url 'hub:logout' %}">Sair</a>
                 </li>
                 
             </ul>
@@ -44,9 +44,9 @@
                     <h5 class="text-warning-emphasis ms-3 mt-2">Funcionalidades</h5>
                     <a class="nav-link" href="#item-0">Atribuição automática</a> 
                     <a class="nav-link" href="#item-1">Grade horária</a>
-                    <a class="nav-link" href="{% url 'page_rp1' %}">Grade horária (RP1)</a>
+                    <a class="nav-link" href="{% url 'ferramenta_graduacao_si:page_rp1' %}">Grade horária (RP1)</a>
                     <!--<a class="nav-link" href="#item-8">Upload RP1</a>-->
-                    <a class="nav-link" href="{% url 'page_tadi' %}">Grade horária (TADI)</a>
+                    <a class="nav-link" href="{% url 'ferramenta_graduacao_si:page_tadi' %}">Grade horária (TADI)</a>
                     <!--<a class="nav-link" href="#item-9">Upload TADI</a>-->
                     <a class="nav-link" href="#item-3">Upload de Dados</a>
                     <a class="nav-link" href="#item-4">Baixar Planilhas</a>
@@ -106,7 +106,7 @@
                             <li><p>Carregar as preferências de disciplinas para todo o ano é essencial para a atribuição automática</p></li>
 
                         </ul>
-                        <form method="post" action="{% url 'process_file' %}" enctype="multipart/form-data">
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:process_file' %}" enctype="multipart/form-data">
                             {% csrf_token %}
                             <div class="mb-3">
                             <label for="inputFile" class="form-label">Escolha a planilha para upload</label>
@@ -138,7 +138,7 @@
                             </p></li>
                            
                         </ul>
-                        <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:load_rp1' %}" enctype="multipart/form-data">
                             {% csrf_token %}
             
                             <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários RP1</label>
@@ -152,7 +152,7 @@
                         <ul>
                             <li>As mesmas considerações da planilha de RP1, descritas acima, são válidas para esta.</li>
                         </ul>
-                        <form method="post" action="{% url 'load_tadi' %}" enctype="multipart/form-data">
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:load_tadi' %}" enctype="multipart/form-data">
                             {% csrf_token %}
             
                             <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários TADI</label>
@@ -173,7 +173,7 @@
                     </ul>
 
                     <div class="col-sm-8">
-                        <form method="POST" action="{% url 'download_zip_planilhas'%}">
+                        <form method="POST" action="{% url 'ferramenta_graduacao_si:download_zip_planilhas'%}">
                             {% csrf_token %}
                             <div class="form-group">
                                 <select required="required" class="form-select" name="ano_xlsx" id="ano_xlsx">
@@ -257,14 +257,14 @@
                             <li><p>obs: Olhe o status pelo terminal, ainda falta criar uma caixa de texto para informar o status da criação</p></li>
                             
                         </ul>
-                        <form method="post" action="{% url 'gerar_atribuicao' %}" enctype="multipart/form-data">
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:gerar_atribuicao' %}" enctype="multipart/form-data">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">Gerar</button>
                         </form>
                         <br>
                         <h4>Upload</h4>
                         
-                        <form method="post" action="{% url 'load_atribuicao' %}" enctype="multipart/form-data">
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:load_atribuicao' %}" enctype="multipart/form-data">
                             {% csrf_token %}
             
                             <label for="inputFile" class="form-label">Após baixar a planilha docentes.xlsx, que é a de atribuição, faça o upload dela modificada abaixo.
