@@ -25,8 +25,8 @@
     <script type="module" src="{% static 'table/js/tadiTable.js' %}"></script>
     {{ auto_profs|json_script:"auto_profs"}}
     
-    <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
-    <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'table/styles/index.css' %}">
+    <link rel="stylesheet" href="{% static 'table/styles/styles.css' %}">
     <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
 
     <title>TADI</title>
