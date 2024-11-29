@@ -12,7 +12,7 @@
 
 <body>
     <header class="navbar navbar-expand-lg navbar-light headerusp">
-        <!-- Canto Esquerdo - Logotipo ou Imagem -->
+        <!-- Canto Esquerdo Superior - Logotipo ou Imagem -->
         <div class="navbar-brand logo" href="#">
             <img src="{% static 'images/logotipo.png'%}" alt="Logo"  class="d-inline-block align-top">
         </div>
@@ -37,6 +37,7 @@
         </div>
     </header>
 
+      <!-- Canto Esquerdo - Barra de Navegação -->
     <div class="row">
         <div class="col-2">
           <nav id="navbar-example3" class="h-100 flex-column align-items-stretch pe-4 border-end">
@@ -64,7 +65,10 @@
       
         <div class="col-8 mt-3">
             <div data-bs-spy="scroll" data-bs-target="#navbar-example3" data-bs-smooth-scroll="true" class="scrollspy-example-2" tabindex="0">
+                
+                <!-- Primeira/principal página id="item-1" - Grade horária -->
                 <div id="item-1">
+                    <!-- O problema está no id da div -->
                     <h4>Escolher grade horária</h4>
                     <div class="col-sm-8">
                         <form id="semestreCurso" method="post" action = "redirect" >
@@ -98,13 +102,13 @@
                     </div>
                 </div>
                 
+                <!-- Segunda página id="item-3" - Upload de Dados -->
                 <div class="d-none" id="item-3">
                     <h4>Carregue as preferências</h4>
                     <div class="col-sm-8">
                         <ul>
                             <li><p>Essa planilhas deve ser vindas do forms de preferências, seguindo o modelo</p></li>
                             <li><p>Carregar as preferências de disciplinas para todo o ano é essencial para a atribuição automática</p></li>
-
                         </ul>
                         <form method="post" action="{% url 'process_file' %}" enctype="multipart/form-data">
                             {% csrf_token %}
@@ -162,6 +166,8 @@
                     </div>  
 
                 </div>
+
+                <!-- Terceira página id="item-4" - Baixar planilhas -->
                 <div class="d-none" id="item-4">
                     <h5>Considerações</h5>
                     <ul>
@@ -187,14 +193,8 @@
                         </form>
                     </div>
                 </div>
-                
-                <div class="d-none" id="item-8">
-                     
-                </div>
-                <div class="d-none" id="item-9">
-                     
-                </div>
 
+                <!-- Quarta página id="item-5" - Docentes com menos de 8 horas-aula -->
                 <div class="d-none" id="item-5">
                     <div class="col-sm-10" id="pend_impar">
                         <h5>Docentes com menos de 8 horas-aula (Ímpar)</h5>
@@ -239,9 +239,7 @@
                     </div> 
                 </div>
 
-                <div class="d-none" id="item-6">
-                    
-                </div>
+                <!-- Quinta página id="item-0" - Atribuição automática -->
                 <div class="d-none" id="item-0">
                     <div class="col-sm-10" id="pend_par">
                         <h4>Gerar atribuição</h4>
@@ -277,6 +275,8 @@
 
                     </div>
                 </div>
+
+                <!-- Sexta página id="item-7" - Disciplinas obrigatórias sem horário alocado -->
                 <div class="d-none" id="item-7">
                     <div class="col-12" id="disc_sem_turma">  
                         <table class="table table-bordered table-hover">
@@ -314,6 +314,7 @@
                         </table>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

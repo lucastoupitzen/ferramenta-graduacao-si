@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div id="item-7">
+    <div class="col-12" id="disc_sem_turma">  
+        <table class="table table-bordered table-hover">
+            <thead class="table-warning">
+                <th scope="col" class="align-middle" >Nome</th>
+                <th scope="col" class="align-middle" >Abreviação</th>
+                <th scope="col" class="align-middle" > Turma sem período/dia alocado</th>
+                <th scope="col" class="align-middle" >Semestre</th>
+            </thead>
+            <tbody>
+                <th colspan="4" class="table-secondary p-2 text-center">ÍMPAR</th>
+                {% for inf_dict in sem_tur.values%}
+                {% if inf_dict.smt == "impar" %}  
+                <tr>
+                    <td>{{ inf_dict.disc.NomeDisc}}</td>
+                    <td>{{ inf_dict.disc.Abreviacao }}</td>
+                    <td>{{ inf_dict.faltando }}
+                    <td>{{ inf_dict.disc.SemestreIdeal }}</td>
+                </tr>
+                {% endif%}
+
+                {% endfor %}
+                <th colspan="4" class="table-secondary p-2 text-center">PAR</th>
+                {% for inf_dict in sem_tur.values%}
+                {% if inf_dict.smt == "par" %}  
+                <tr>
+                    <td>{{ inf_dict.disc.NomeDisc}}</td>
+                    <td>{{ inf_dict.disc.Abreviacao }}</td>
+                    <td>{{ inf_dict.faltando }}
+                    <td>{{ inf_dict.disc.SemestreIdeal }}</td>
+                </tr>
+                {% endif%}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

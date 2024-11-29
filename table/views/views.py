@@ -252,7 +252,7 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
     tbl[row][col + 1] = prof
 
 @login_required
-def menu(request):
+def grade_horaria(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
 
     anos_ant = [i for i in range(2015, ano)]
@@ -262,7 +262,72 @@ def menu(request):
         "sem_tur": turmas_obrigatórias_sem_horario(ano),
         "falta_aula": menos8_horas_aula_prof(ano)
     }
-    return render(request, "table/menu.html", context)
+    return render(request, "table/grade_horaria.html", context)
+
+@login_required
+def upload_dados(request):
+    ano = int(AnoAberto.objects.get(id=1).Ano)
+
+    anos_ant = [i for i in range(2015, ano)]
+    context = {
+        "anos_ant": anos_ant,
+        "anoAberto": ano,
+        "sem_tur": turmas_obrigatórias_sem_horario(ano),
+        "falta_aula": menos8_horas_aula_prof(ano)
+    }
+    return render(request, 'upload_dados.html', context)
+
+@login_required
+def baixa_plainlhas(request):
+    ano = int(AnoAberto.objects.get(id=1).Ano)
+
+    anos_ant = [i for i in range(2015, ano)]
+    context = {
+        "anos_ant": anos_ant,
+        "anoAberto": ano,
+        "sem_tur": turmas_obrigatórias_sem_horario(ano),
+        "falta_aula": menos8_horas_aula_prof(ano)
+    }
+    return render(request, 'baixar_planilhas.html', context)
+
+@login_required
+def obrigatorias_sem_horario(request):
+    ano = int(AnoAberto.objects.get(id=1).Ano)
+
+    anos_ant = [i for i in range(2015, ano)]
+    context = {
+        "anos_ant": anos_ant,
+        "anoAberto": ano,
+        "sem_tur": turmas_obrigatórias_sem_horario(ano),
+        "falta_aula": menos8_horas_aula_prof(ano)
+    }
+    return render(request, 'obrigatorias_sem_horario.html', context)
+
+@login_required
+def docentes_menos_oito(request):
+    ano = int(AnoAberto.objects.get(id=1).Ano)
+
+    anos_ant = [i for i in range(2015, ano)]
+    context = {
+        "anos_ant": anos_ant,
+        "anoAberto": ano,
+        "sem_tur": turmas_obrigatórias_sem_horario(ano),
+        "falta_aula": menos8_horas_aula_prof(ano)
+    }
+    return render(request, 'docentes_menos_oito.html', context)
+
+@login_required
+def atribuicao_automatica(request):
+    ano = int(AnoAberto.objects.get(id=1).Ano)
+
+    anos_ant = [i for i in range(2015, ano)]
+    context = {
+        "anos_ant": anos_ant,
+        "anoAberto": ano,
+        "sem_tur": turmas_obrigatórias_sem_horario(ano),
+        "falta_aula": menos8_horas_aula_prof(ano)
+    }
+    return render(request, 'atribuicao_automatica.html')
 
 
 def turmas_obrigatórias_sem_horario(ano):

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div id="item-4">
+    <h5>Considerações</h5>
+    <ul>
+        <li>Três planilhas serão baixadas compactadas em um arquivo.zip</li>
+        <li>Uma é a de atribuição, nomeada como docentes.xlsx, e o restante de distribuição</li>
+        <li>Use a de docentes.xlsx depois de gerar a atribuição automática, modifique-a e suba novamente ao sistema </li>
+        <li>Já a de destribuição estará preenchidas conforme as grades forem completadas</li>
+        <li>Obs: o código da planilha de destribuição é antigo e pode necessitar de revisões</li>
+    </ul>
+
+    <div class="col-sm-8">
+        <form method="POST" action="{% url 'download_zip_planilhas'%}">
+            {% csrf_token %}
+            <div class="form-group">
+                <select required="required" class="form-select" name="ano_xlsx" id="ano_xlsx">
+                    {% for ano in anos_ant %}
+                    <option value="{{ano}}">{{ano}}</option>
+                    {% endfor%}
+                    <option selected value="{{anoAberto}}">{{anoAberto}}</option>
+                </select>
+            </div>
+            <button type="submit" class="mt-3 btn btn-warning">Baixar</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

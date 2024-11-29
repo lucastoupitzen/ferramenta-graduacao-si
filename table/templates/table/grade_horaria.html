@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div id="item-1">
+    <h4>Escolher grade horária</h4>
+    <div class="col-sm-8">
+        <form id="semestreCurso" method="post" action = "redirect" >
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="select1">Selecione o semestre do curso...</label>
+                <select required="required" class="form-select" name="select1" id="select1">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+            <h6 class="mt-3">Na seleção de um anterior ao válido, 
+                a tabela de grade horária somente será para visualização.
+            </h6>
+            <div class="form-group">
+                <select required="required" class="form-select" name="anoSelecionado" id="ano">
+                    {% for ano in anos_ant %}
+                    <option value="{{ano}}">{{ano}}</option>
+                    {% endfor%}
+                    <option selected value="{{anoAberto}}">{{anoAberto}}</option>
+                </select>
+            </div>
+            <input type="submit" class="btn btn-warning mt-3" value="Editar/Visualizar">
+        </form>
+    </div>
+</div>
+
+{% endblock %}

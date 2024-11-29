@@ -59,7 +59,7 @@ ROOT_URLCONF = "cronograma_profs.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates/table')],
+        "DIRS": [os.path.join(BASE_DIR, 'table/templates/table')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

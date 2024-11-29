@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div id="item-3">
+    <h4>Carregue as preferências</h4>
+    <div class="col-sm-8">
+        <ul>
+            <li><p>Essa planilhas deve ser vindas do forms de preferências, seguindo o modelo</p></li>
+            <li><p>Carregar as preferências de disciplinas para todo o ano é essencial para a atribuição automática</p></li>
+        </ul>
+        <form method="post" action="{% url 'process_file' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+            <label for="inputFile" class="form-label">Escolha a planilha para upload</label>
+            <input type="file" class="form-control" id="inputFile" name="excel_file">
+            </div>
+            <div class="mb-3">
+            <label for="inputType" class="form-label">Tipo de Planilha</label>
+            <select class="form-select" id="inputType" name="excel_type">
+                <option value="pref_disc_hro">Preferências de Disciplinas e Horários</option>
+                <option value="pref_hro_2">Preferências de Horário para o 2º semestre</option>
+            </select>
+            </div>
+            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+        </form>
+    </div>
+    <hr>
+    <div class="col-sm-8">
+        <h4>Planilha de Resolução de Problema 1 (RP1)</h4>
+        <ul>
+            <li><p>Sempre cadastre os professores de SI pela tabela
+                de grade horária RP1(menu ao lado), já que sistema não lê um professor de SI da coluna docentes da planilha.
+            </p></li>
+            <li><p>Após enviar a planilha, as turmas serão criadas e o sistema direcionará para a tabela editável
+                de RP1.
+            </p></li>
+            <li><p> Toda vez que a planilha for recarregada o sistema apaga os cadastros anteriores no respectivo ano.
+            </p></li>
+            <li><p>O modelo da planilha para upload é o de RP1 2024, caso seja diferente do modelo erros podem ocorrer.
+            </p></li>
+           
+        </ul>
+        <form method="post" action="{% url 'load_rp1' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários RP1</label>
+            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+        </form>
+    </div>
+    <hr>
+    <div class="col-sm-8">
+        <h4>Planilha de Tratamento e análise de Dados (TADI)</h4>
+        <ul>
+            <li>As mesmas considerações da planilha de RP1, descritas acima, são válidas para esta.</li>
+        </ul>
+        <form method="post" action="{% url 'load_tadi' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários TADI</label>
+            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+        </form>
+    </div>  
+
+</div>
+
+{% endblock %}

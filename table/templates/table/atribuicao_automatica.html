@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div id="item-0">
+    <div class="col-sm-10" id="pend_par">
+        <h4>Gerar atribuição</h4>
+        <ul>
+            <li><p>Use essa função após abrir um novo ano de válido e ter feito o upload da planilha vinda
+                do forms que contém as preferências dos professores para disciplinas de todo o ano.
+            </p></li>
+            <li><p>Para ver a planilha de atribuição gerada automaticamente use a opção "baixar planilhas" desse menu.
+            </p></li>
+            <li><p> Os professores atribuidos às disciplinas serão sugeridos no prenchimento das grades horárias</p></li>
+            <li><p> NÂO preencha as grades antes de ter usado essa função.</p></li>
+            <li><p> Ao clicar em gerar novamente o sistema apaga todas as turmas anteriormente criadas para o ano</p></li>
+            <li><p>obs: Olhe o status pelo terminal, ainda falta criar uma caixa de texto para informar o status da criação</p></li>
+            
+        </ul>
+        <form method="post" action="{% url 'gerar_atribuicao' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning">Gerar</button>
+        </form>
+        <br>
+        <h4>Upload</h4>
+        
+        <form method="post" action="{% url 'load_atribuicao' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label for="inputFile" class="form-label">Após baixar a planilha docentes.xlsx, que é a de atribuição, faça o upload dela modificada abaixo.
+                Ela servirá para sugerir professores nas tabelas de grades horárias do ano válido.</label>
+            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+            <button type="submit" class="btn btn-warning">Enviar</button>
+        </form>
+
+        <p> Obs: gerencie as mudanças nas justificativas (licença-premio, pós-doc etc) pela área admin</p>
+
+    </div>
+</div>
+
+{% endblock %}

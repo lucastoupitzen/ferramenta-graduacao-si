@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div id="item-5">
+    <div class="col-sm-10" id="pend_impar">
+        <h5>Docentes com menos de 8 horas-aula (Ímpar)</h5>
+        <p>*CH = carga horária já registrada no sistema</p>
+        <table class="table table-bordered table-hover">
+            <thead class="table-warning">
+                <th scope="col">Nome</th>
+                <th scope="col">CH Ímpar</th>
+            </thead>
+            <tbody>
+                {% for nome, values in falta_aula.items%} 
+                {% if values.I != -1%} 
+                <tr>
+                    <th scope="row">{{nome}}</th>
+                    <td>{{ values.I }}</td>
+                </tr>
+                {% endif%}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="col-sm-10" id="pend_par">
+        <h5>Docentes com menos de 8 horas-aula (Par)</h5>
+        <p>*CH = carga horária já registrada no sistema</p>
+        <table class="table table-bordered table-hover">
+            <thead class="table-warning">
+                <th scope="col">Nome</th>
+                <th scope="col">CH Par</th>
+            </thead>
+            <tbody>
+                {% for nome, values in falta_aula.items%}
+                {% if values.P != -1%}   
+                <tr>
+                    <th scope="row">{{nome}}</th>
+                    <td>{{ values.P }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div> 
+</div>
+
+{% endblock %}

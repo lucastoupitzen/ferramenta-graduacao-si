@@ -1,0 +1,25 @@
+{% load static %}
+
+<div class="col-2">
+    <nav id="navbar-example3" class="h-100 flex-column align-items-stretch pe-4 border-end">
+          <nav class="nav nav-pills flex-column">
+              <h5 class="text-warning-emphasis ms-3 mt-2">Funcionalidades</h5>
+              <a class="nav-link" href="{% url 'atribuicao_automatica' %}">Atribuição automática</a> 
+              <a class="nav-link" href="{% url 'grade_horaria' %}">Grade horária</a>
+              <a class="nav-link" href="{% url 'page_rp1' %}">Grade horária (RP1)</a>
+              <!--<a class="nav-link" href="#item-8">Upload RP1</a>-->
+              <a class="nav-link" href="{% url 'page_tadi' %}">Grade horária (TADI)</a>
+              <!--<a class="nav-link" href="#item-9">Upload TADI</a>-->
+              <a class="nav-link" href="{% url 'upload_dados' %}">Upload de Dados</a>
+              <a class="nav-link" href="{% url 'baixa_planilhas' %}">Baixar Planilhas</a>
+              <hr>
+              <h5 class="text-warning-emphasis ms-3 mt-2">Pendências {{anoAberto}}</h5>
+
+              <a class="nav-link" href="{% url 'docentes_menos_oito' %}">Docentes com menos de 8 horas-aula</a>
+              <!--<a class="nav-link" href="#item-6">Docentes com menos de 8 horas-aula (Par)</a>-->
+
+              <a class="nav-link" href="{% url 'obrigatorias_sem_horario' %}">Disciplinas obrigatórias sem horário alocado</a>
+          </nav>
+      </nav>
+    </nav>
+</div>
